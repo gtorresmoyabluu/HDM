@@ -1,0 +1,130 @@
+/* TUTORIALS */
+.tutHeader {
+    display: flex;
+    justify-content: space-between;
+}
+
+#tutEditContainer {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.tutEditorContainer, .tutDisplayContainer {
+    width: calc(50% - 65px)
+}
+
+.tutEditorContainer {
+    margin-right: 20px;
+}
+
+.tutCstmSeprtr {
+    border-style: none;
+    height: 20px;
+    background-color: white;
+    display: none;
+    width: 100%;
+}
+
+.tutEditionButton {
+    margin-right: 0px;
+}
+
+.tutEditionTrashButton {
+    border-radius: 0px 50% 50% 0px !important;
+    height: 30px !important;
+    border-left: 1px solid #ccc !important;
+}
+
+.tutEditorContainer .ql-container {
+    border-bottom: 0px !important;
+}
+
+@media only screen and (max-width:1242px) {
+    .tutHeader {
+        flex-direction: column;
+    }
+    .tutEditorContainer {
+        width: calc(100% - 105px);
+        margin-right: 0px;
+    }
+    .tutDisplayContainer {
+        width: 100%;
+    }
+    .tutCstmSeprtr {
+        display: block;
+    }
+}
+
+/* Reproductor de tutorial */
+#tutorialViewer .ui-dialog-titlebar {
+    background-color: #f7f7f7;
+}
+
+#tutorialViewer .ui-dialog-titlebar>span {
+    display: block;
+    width: calc(100% - 50px);
+}
+
+#tutorialViewer .ui-icon-triangle-1-s {
+    color: #3e464c;
+}
+
+/* Grafo de páginas */
+#tutGrafo .grafBorderNormal>circle {
+    stroke: #ccc;
+    stroke-width: 2px;
+}
+
+#tutGrafo .grafBorderStart>circle {
+    stroke: rgb(87, 172, 255);
+    stroke-width: 2px;
+}
+
+#tutGrafo .grafBorderExit>circle {
+    stroke: rgb(0, 133, 41);
+    stroke-width: 2px;
+}
+
+#tutGrafo .grafBorderError>circle {
+    stroke: rgb(254, 76, 76);
+    stroke-width: 2px;
+}
+
+#tutGrafo .grafBorderNormal>text, #tutGrafo .grafBorderStart>text, #tutGrafo .grafBorderExit>text, #tutGrafo .grafBorderError>text
+    {
+    text-anchor: middle;
+}
+
+#tutGrafo text {
+    font-family: "Roboto", "Helvetica Neue", sans-serif;
+}
+
+#tutGrafo .grafBckgrndError>circle {
+    fill: rgb(254, 76, 76);
+}
+
+#tutGrafo .grafBckgrndSelected>circle {
+    fill: #dfa242;
+}
+
+#tutGrafo .grafBckgrndNormal>circle {
+    fill: #EEE;
+}
+
+#tutGrafo .grafLink {
+    stroke: #dddddd;
+    stroke-width: 3px;
+}
+
+#tutGrafo .tooltip {
+    opacity: 0;
+}
+
+#tutGrafo circle:hover ~ .tooltip {
+    opacity: 1;
+}
+
+#tutGrafo text:hover:not (.tooltip ) ~ .tooltip {
+    opacity: 1;
+}

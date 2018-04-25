@@ -1,0 +1,12 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html">
+
+    <div class="footer">
+        <div class="card clearfix">
+            <span class="footer-text-left"><h:outputText value="#{sessionScope.global_title} #{sessionFace.appVersion} (#{sessionFace.trbLibVersion})"/></span>
+            <span class="footer-text-right"><span>#{sessionScope.global_footer}</span></span>
+        </div>
+    </div>
+
+</ui:composition>

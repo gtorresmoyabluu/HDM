@@ -1,0 +1,52 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:pu="http://primefaces.org/ultima">
+
+    <h:form id="menuform">
+        <div class="layout-menu layout-menu-dark">
+            <div class="nano">
+                <div class="nano-content menu-scroll-content">
+
+                    <h:panelGroup styleClass="profile" layout="block">
+                        <div class="profile-no-image">
+                            <h:panelGroup layout="block">
+                                <i class="material-icons profile-icon-standard">person</i>
+                            </h:panelGroup>
+                        </div>
+                        <a id="profile-options" href="#">
+                            <span class="profile-name">#{sessionFace.userLogged.username}</span>
+                            <i class="material-icons">&#xE313;</i>
+                        </a>
+                    </h:panelGroup>
+
+                    <ul id="profile-menu" class="ultima-menu">
+                        <h:panelGroup rendered="#{sessionFace.hasPermission('profile') and
+                                                  !sessionFace.hasPermission('only_sadmin')}">
+                            <li role="menuitem">
+                                <h:commandLink id="profilelink"
+                                               action="/administration/profile?faces-redirect=true"
+                                               styleClass="ripplelink">
+                                    <i class="material-icons">person</i>
+                                    <span>#{sessionScope.menu_profilelower}</span>
+                                </h:commandLink>
+                            </li>
+                        </h:panelGroup>
+                        <li role="menuitem">
+                            <p:commandLink onclick="PF('dynamicMenu').clearMenuState();" action="#{sessionFace.doLogout}" ajax="false" styleClass="ripplelink">
+                                <i class="material-icons">power_settings_new</i>
+                                <span>#{sessionScope.button_logout}</span>
+                            </p:commandLink>
+                        </li>
+                    </ul>
+                    <pu:menu id="dynamicMenuId" widgetVar="dynamicMenu" model="#{menu.getMenumodel()}"/>
+
+                </div>
+
+            </div>
+        </div>
+    </h:form>
+
+</ui:composition>

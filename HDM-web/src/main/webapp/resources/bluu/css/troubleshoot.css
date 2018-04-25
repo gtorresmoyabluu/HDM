@@ -1,0 +1,563 @@
+/* TROUBLESHOOT */
+
+/* Connected devices*/
+.cdProgressBarPanel {
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.connectedDeviceIcon_img, .connectedDeviceIcon_i, .connectedDeviceIcon_empty {
+    background-color: #dfa242;
+    padding: 4px;
+    border-radius: 50%;
+}
+
+
+.connectedDeviceIcon_active{
+    background-color: #ef5350;
+    color: #fff;
+    padding: 4px;
+    border-radius: 50%;
+    margin-bottom: 4px;
+    
+    vertical-align: top;
+    font-size: 24px;
+}
+
+.connectedDeviceIcon_deactive{
+    background-color: #dfa242;
+    padding: 4px;
+    border-radius: 50%;
+    margin-bottom: 4px;
+    
+    vertical-align: top;
+    font-size: 24px;
+}
+
+
+.connectedDeviceIcon_i, .connectedDeviceIcon_empty {
+    margin-bottom: 4px;
+}
+
+.connectedDeviceIcon_empty {
+    background-color: transparent !important;
+    width: 24px;
+    height: 24px;
+}
+
+.connectedDeviceTab .ui-tabs-panels, .connectedDeviceTab .ui-datagrid-content, .connectedDeviceTab .ui-datagrid-column {
+    background-color: #f5f5f5;
+}
+
+.connectedDeviceTab .ui-datagrid-content {
+    border: 0 !important;
+}
+
+.connectedDevicePanel, .connectedDeviceNotIdentified {
+    border: 1px solid white !important;
+    box-shadow: 1px 1px 2px #e6e6e6;
+}
+
+.connectedDeviceNotIdentified {
+    background-color: #fbf6dc !important;
+}
+
+.connectedDeviceConnected, .connectedDeviceBlocked, .connectedDeviceDisconnected {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    font-size: 24px;
+    background-color: white;
+    border-radius: 50%;
+    padding: 0;
+    margin: 0;
+}
+
+.connectedDeviceConnected {
+    color: #4caf50;
+}
+
+.connectedDeviceBlocked {
+    color: #ff2a2a;
+}
+
+.connectedDeviceDisconnected {
+    color: #c0c0c0;
+}
+
+/* Troubleshoot */
+.trbDataTableNoHeader  th {
+    /* Temporal */
+    text-align: left !important;
+    font-weight: normal !important;
+}
+
+.trbSearchPanel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trbProgressBarPanel {
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.trbDataPanel .ui-panelgrid-cell, trbHistDataPanel .ui-panelgrid-cell{
+    padding: 0 !important;
+}
+.trbHistDataPanel .ui-panelgrid-cell, trbHistDataPanel .ui-panelgrid-cell{
+    padding: 0 !important;
+}
+
+@media ( min-width : 640px) {
+    .trbDataPanel .ui-panelgrid-cell:nth-child(1) , trbHistDataPanel .ui-panelgrid-cell:nth-child(1){
+        width: 26%;
+    }
+    .trbDataPanel .ui-panelgrid-cell:nth-child(2), .trbHistDataPanel .ui-panelgrid-cell:nth-child(3) {
+        width: 37%;
+    }
+    .trbHistDataPanel .ui-panelgrid-cell:nth-child(1) , trbHistDataPanel .ui-panelgrid-cell:nth-child(1){
+        width: 26%;
+    }
+    .trbHistDataPanel .ui-panelgrid-cell:nth-child(2), .trbHistDataPanel .ui-panelgrid-cell:nth-child(3) {
+        width: 37%;
+    }
+}
+
+.trbSectionTitle {
+    font-style: italic;
+    font-size: 12px;
+    text-align: center;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.trbDataGrid .ui-tabs-panels, .trbDataGrid .ui-datagrid-content, .trbDataGrid .ui-datagrid-column, .trbDetailPanel {
+    background-color: #ffffff;
+}
+
+.trbDataGrid .ui-datagrid-content {
+    border: 0 !important;
+}
+
+.trbTopologyAccordionTitle, .trbAccordionTitle {
+    margin-top: 0 !important;
+    background-color: #f6f4f4 !important;
+    color: #212121 !important;
+}
+
+.trbDetailTxtHeaderOK, .trbDetailTxtHeaderLow, .trbDetailTxtHeaderHigh {
+    margin-top: 0 !important;
+}
+
+.trbTopologyAccordionTitle .ui-icon, .trbAccordionTitle .ui-icon, .trbDetailAccordionTitle .ui-icon,
+.trbDetailTxtHeaderOK .ui-icon, .trbDetailTxtHeaderLow .ui-icon, .trbDetailTxtHeaderHigh .ui-icon {
+    display: none;
+}
+
+.trbAccordion .ui-accordion-content {
+    border: 1px solid #cccccc !important;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+#form_trb_detail .ui-accordion-content, #form_trb_hist_detail .ui-accordion-content {
+    border-left: 1px solid #cccccc !important;
+    border-right: 1px solid #cccccc !important;
+    border-bottom: 1px solid #cccccc !important;
+    border-top: 0 !important;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+/* Troubleshoot - esquema vista*/
+
+.trbSeparator{
+    margin:3px;
+}
+
+/* Troubleshoot - topology */
+.trbTopologyAccordionTitle {
+    padding: 2px 5px 0 !important;
+    border-top: 1px solid #cccccc !important;
+    border-left: 1px solid #cccccc !important;
+    border-right: 1px solid #cccccc !important;
+    border-bottom: 0 !important;
+}
+
+.trbAccordion .topologyContent {
+    padding: 10px 5px;
+}
+
+.trbAccordion .topologyVtecContent {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+/* Troubleshoot - vista tecnica */
+.trbVtec .ui-panelgrid-content {
+    border: 0 !important;
+}
+
+.trbVtecTable th {
+    display: none !important;
+}
+
+.trbVtecTable tr, .trbVtecTable td {
+    border: 0 !important;
+}
+
+.trbVtecInnTable th {
+    display: table-cell !important;
+    border: 1px solid !important;
+}
+
+.trbVtecInnTable tr, .trbVtecInnTable td {
+    border: 1px solid !important;
+}
+
+.trbVtecInnTable th.ui-datatable-even-inner {
+    background-color: #f4f4f4 !important;
+}
+
+.trbVtecInnTable th.ui-datatable-odd-inner {
+    background-color: #fff !important;
+}
+
+.trbVtecInnTable tr.ui-datatable-even-inner {
+    background-color: #f4f4f4 !important;
+}
+
+.trbVtecInnTable tr.ui-datatable-odd-inner {
+    background-color: #fff !important;
+}
+
+.trbVtecTopologyInfo .ui-panelgrid-cell {
+    width: 100% !important;
+}
+
+/* Troubleshoot - historico */
+.trbHist table table tr, .trbHist table table td {
+    border: 0 !important;
+}
+
+/* Troubleshoot - View */
+.trbAutomatics .ui-grid-row:first-child .trbColorLine{
+    display:block;
+}
+
+.trbAutomatics_withnocommercial .ui-grid-row:first-child .ui-datagrid-column {
+    padding-top: 3px !important;
+}
+
+.trbAutomatics .ui-datagrid-column{
+    padding-top:0px;
+    padding-bottom:0px;
+}
+
+.trbAutomatics .ui-accordion-content{
+    margin-bottom:0px !important;
+    border-radius: 0px !important;
+    -webkit-border-radius: 0px !important;
+}
+
+.trbAutomatics .ui-grid-row:last-child .ui-accordion-content{
+    border-bottom-left-radius: 3px !important;
+    border-bottom-right-radius: 3px !important;
+    -webkit-border-bottom-left-radius: 3px !important;
+    -webkit-border-bottom-right-radius: 3px !important;
+}
+
+.trbAutomatics .ui-grid-row:first-child .ui-datagrid-column{
+    padding-top:7px;
+}
+.trbAutomatics .ui-grid-row:last-child .ui-datagrid-column{
+    padding-bottom:7px;
+}
+
+.trbAccordionTitle {
+    padding: 0 0 0 0 !important;
+    border-top: 1px solid #cccccc !important;
+    border-left: 1px solid #cccccc !important;
+    border-right: 1px solid #cccccc !important;
+    border-bottom: 0 !important;
+}
+
+.trbAutomatics .trbAccordionTitle{
+    border-radius: 0px !important;
+    -webkit-border-radius:0px !important;
+}
+
+.trbAutomatics .ui-grid-row:first-child .trbAccordionTitle{
+    border-top-left-radius: 3px !important;
+    border-top-right-radius: 3px !important;
+    -webkit-border-top-left-radius: 3px !important;
+    -webkit-border-top-right-radius: 3px !important;
+}
+
+
+.trbColorLine{
+    margin:0px; 
+    height: 2px; 
+    width:calc(100% - 1px);  
+    position:relative; 
+    bottom:1px;   
+}
+
+.trbSummaryPanel, .trbSummaryPanel .ui-datagrid-content {
+    padding: 0 !important;
+    border: 0 !important;
+}
+
+.trbSummaryPanel .ui-datagrid-content, .trbSummaryPanel .ui-datagrid-column, .trbSummaryPanelItem {
+    background-color: white;
+}
+
+.trbSummaryPanel .ui-datagrid-column, .trbAccordion .ui-accordion-content {
+    padding: 0 !important;
+}
+
+.trbSummaryPanelItem:hover, .trbSummaryPanel .ui-grid-row:hover {
+    background-color: #dfdfdf !important;
+}
+
+.trbSummaryPanel a {
+    display: block;
+    color: #212121 !important;
+}
+
+.trbPanel{
+    border-radius: 3px;
+    padding:30px;
+    margin-bottom:12px;
+    margin-top:10px;
+    margin-left:3px;
+    margin-right: 3px;
+}
+
+/* Troubleshoot - No automatic diagnosis */
+
+.trbNoAutoInputSearch{
+    width:calc(84% - 25px) !important;
+    margin-left:8% !important;
+    margin-top: 9px !important;
+    margin-bottom: 9px !important;
+}
+
+.trbNoAutoSearchIcon{
+    font-size:23;
+    position:relative;
+    top:3px;
+    width:25px;
+}
+
+/* Troubleshoot - Diagnosis Detail */
+.trbDetailPanel {
+    padding: 17px 8px 14px;
+}
+
+.trbDetailTxtHeaderOK, .trbDetailTxtHeaderLow, .trbDetailTxtHeaderHigh {
+    color: white;
+    padding: 2px 5px 0 !important;
+}
+
+.trbDetailTxtHeaderHigh {
+    background-color: #e95d5d !important;
+}
+
+.trbDetailTxtHeaderLow {
+    background-color: #efb944 !important;
+}
+
+.trbDetailTxtHeaderOK {
+    background-color: #73C76B !important;
+}
+
+.trbDetailTxt {
+    background-color: white;
+}
+
+.trbDetailNormalHeader {
+    background-color: #b3b3b3 !important;
+}
+
+.trbDetailTxtInfo table {
+    border-collapse: collapse;
+}
+
+.trbDetailTxtInfo td {
+    border: 1px solid black;
+    padding: 5px;
+}
+
+.trbVTecParam table {
+    border-collapse: collapse !important;
+}
+
+.trbVTecParam td {
+    border: 1px solid black !important;
+    padding: 5px !important;
+}
+
+/* Inteferencias */
+.trbInterfActions {
+    text-align: right;
+    bottom: 0;
+    margin: 5px;
+    padding-right: 5px
+}
+
+/*Custom Progress Bar*/
+.customProgress {
+    width: 100%;
+    background-color: #cccccc;
+    height: 1px;
+}
+
+.customProgressValue {
+    background-color: #f3b642;
+    height: 2px;
+    margin-top: -2px;
+    text-align: right;
+}
+
+.customProgressValueText {
+    color: #000;
+    background-color: #ffffff;
+    position: relative;
+    top: -7px;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.customProgressLabel {
+    margin-top: 10px;
+}
+
+/*Troubleshoot All */
+.trbAllButtonPanel {
+    padding: 16px;
+}
+
+.trbAllTabView {
+    border: 0 !important;
+}
+
+.trbAllVTecCollapsible {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+}
+
+.trbAllVTecCollapsible .ui-accordion-content, .trbAllVTecCollapsible .ui-accordion-content tbody {
+    border: 0 !important;
+}
+
+/* troubleshoot interferencias */
+.dg_recom .ui-datagrid-content {
+    border: 0 !important;
+}
+
+.dg_status .ui-datagrid-content, .dg_evol .ui-datagrid-content {
+    border: 0 !important;
+}
+
+.dg_status .ui-datagrid-column:nth-child(1), .dg_evol .ui-datagrid-column:nth-child(1) {
+    padding-right: 20px !important;
+}
+
+.dg_status .ui-datagrid-column:nth-child(2), .dg_evol .ui-datagrid-column:nth-child(2) {
+    padding-left: 20px !important;
+}
+
+/* Transformaciones */
+.horizontalFlip {
+    -moz-transform: scale(-1, 1);
+    -webkit-transform: scale(-1, 1);
+    -o-transform: scale(-1, 1);
+    -ms-transform: scale(-1, 1);
+    transform: scale(-1, 1);
+}
+
+ /**/
+.dialogText {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: justify;
+}
+
+/*Datatable white paginator*/
+.whiteTable .ui-paginator-bottom {
+    color: black;
+    background-color: white;
+    border-bottom: 1px solid #bdbdbd;
+    border-left: 1px solid #bdbdbd;
+    border-right: 1px solid #bdbdbd;
+}
+
+.whiteTable .ui-paginator-first, .whiteTable .ui-paginator-prev, .whiteTable .ui-paginator-next, .whiteTable .ui-paginator-last,
+    .whiteTable .ui-paginator-page {
+    color: black !important;
+}
+
+.whiteTable .ui-paginator-page .ui-state-active {
+    color: white !important;
+}
+
+/* tarjetas ligeras */
+.lighcard {
+    border: 1px solid #d4d4d4;
+    border-radius: 3px;
+    padding: 16px;
+}
+
+/* Configuración WiFi */
+.confWifiDataPanel .card {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 2px 1px -1px rgba(0, 0, 0, 0.14) !important;
+    -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 2px 1px -1px rgba(0, 0, 0, 0.14) !important;
+    -webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 2px 1px -1px rgba(0, 0, 0, 0.14)
+        !important;
+}
+
+.confWifiDataPanel .ui-panelgrid-cell {
+    padding: 4px 1px !important;
+}
+
+.confwifiDataGrid .ui-tabs-panels, .confwifiDataGrid .ui-datagrid-content, .confwifiDataGrid .ui-datagrid-column {
+    background-color: #ffffff;
+}
+
+.confwifiDataGrid .ui-datagrid-content {
+    border: 0 !important;
+    padding: 14px 8px;
+}
+
+.confwifi_2_4, .confwifi_5 {
+    color: #ffffff;
+    padding: 5px 10px;
+}
+
+.confwifi_2_4 {
+    background-color: #03a9f4;
+}
+
+.confwifi_5 {
+    background-color: #8bc34a;
+}
+
+.confwifiEditPanel {
+    background-color: #ffffff !important;
+    border: 0 !important;
+    padding-top: 10px !important;
+}
+
+.confwifi_message {
+    background-color: #fbf5dd;
+    color: #7c5c21;
+}
+
+.confwifi_netopen {
+    color: #ff2a2a;
+}

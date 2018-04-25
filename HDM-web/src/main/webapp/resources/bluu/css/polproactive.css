@@ -1,0 +1,13 @@
+body .ui-steps:before {
+    content: ' ';
+    border: 0px solid #bdbdbd;
+    width: 99%;
+    top: 45%;
+    left: 0;
+    display: block;
+    position: absolute;
+}
+
+body .ui-steps .ui-steps-item.ui-state-highlight .ui-steps-number {
+    background-color: #dfa242;
+}

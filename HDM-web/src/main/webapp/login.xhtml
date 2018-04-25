@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <f:view contentType="text/html" locale="#{locale.current}">
+        <h:head>
+            <f:facet name="first">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+                <meta name="apple-mobile-web-app-capable" content="yes"/>
+                <link rel="shortcut icon" type="image/x-icon" href="#{request.contextPath}/resources/bluu/images/favicon.ico"/>
+            </f:facet>
+            <title><h:outputText value="Index"/></title>
+            <!-- JAVASCRIPTS -->
+            <h:outputScript name="js/layout.js" library="ultima-layout"/>
+            <h:outputScript name="js/ripple.js" library="ultima-layout"/>
+
+            <!-- HOJA DE ESTILOS -->
+            <h:outputStylesheet name="css/ripple.css" library="ultima-layout"/>
+            <h:outputStylesheet name="css/layout-schaman.css" library="ultima-layout"/>
+            <h:outputStylesheet name="css/template.css" library="bluu"/>
+
+        </h:head>
+
+        <h:body styleClass="login-body">
+
+            <h:form id="form">
+
+                <div class="card login-panel ui-fluid">
+                    <div class="ui-g">
+                        <div class="ui-g-12">
+                            <p:graphicImage name="images/logo_black_200x30.png" library="bluu"/>
+                        </div>
+
+                        <h:panelGroup layout="block" styleClass="ui-g-12" rendered="#{not empty facesContext.getMessageList('form:button')}">
+                            <p:message for="form:button" showSummary="true" showDetail="false"/>
+                        </h:panelGroup>
+
+                        <div class="ui-g-12">
+                            <h:panelGroup styleClass="md-inputfield">
+                                <p:inputText id="user" value="#{login.userName}" required="true" autocomplete="off"
+                                             requiredMessage="Usuario: Valor requerido."/>
+                                <label>Usuario</label>
+                            </h:panelGroup>
+                        </div>
+                        <div class="ui-g-12">
+                            <h:panelGroup styleClass="md-inputfield">
+                                <p:password id="passwd" value="#{login.passwd}" required="true" autocomplete="new-password"
+                                            requiredMessage="Contraseña: Valor requerido."/>
+                                <label>Contraseña</label>
+                            </h:panelGroup>
+                        </div>
+                        <div class="ui-g-12">
+                            <p:commandButton id="button" value="Entrar"
+                                             action="#{login.doLogin}" icon="ui-icon-person"
+                                             update="@form"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="login-footer"><h:outputText value="HDM #{sessionFace.appVersion} (#{sessionFace.trbLibVersion})"/></div>
+            </h:form>
+        </h:body>
+    </f:view>
+</html>

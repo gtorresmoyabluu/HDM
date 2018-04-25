@@ -1,0 +1,20 @@
+/* ROLES */
+.roles .ui-treetable-scrollable-body th span{
+    display:none !important;
+}
+
+.roles .ui-treetable-scrollable-header-box th{
+    vertical-align: bottom;
+}
+
+.roles .ui-treetable-scrollable-header-box span{
+    position:relative;
+    top:4px;
+}
+.roles .verticalDirection{
+    writing-mode: vertical-rl;
+}
+
+.roles .ui-treetable tr:hover{
+    background-color: #dfa242;
+}

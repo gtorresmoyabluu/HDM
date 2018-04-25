@@ -1,0 +1,38 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:p="http://primefaces.org/ui"
+		xmlns:ui="http://java.sun.com/jsf/facelets">
+
+    <div class="topbar clearfix">
+        <div class="topbar-left">
+            <div class="logo"></div>
+        </div>
+
+        <h:form id="form_tb">
+
+            <div class="topbar_Oper">
+                <!--<p:graphicImage name="images/logo_oper.svg" library="bluu" height="40px" />-->
+            </div>
+
+            <p:remoteCommand name="doLogout" onstart="PF('dynamicMenu').clearMenuState();" action="#{sessionFace.doLogout}" />
+
+            <div class="topbar-right">
+
+                <a id="menu-button" href="#"> <i />
+                </a> <a id="topbar-menu-button" href="#"> <i class="material-icons">menu</i>
+                </a>
+
+                <ul class="topbar-items fadeInDown animated">
+
+                    <li><a href="#" onclick="doLogout();" onfocus="blur();"> <i title="#{sessionScope.button_logout}"
+										class="topbar-icon material-icons">power_settings_new</i> <span class="topbar-item-name">#{sessionScope.button_logout}</span>
+			</a></li>
+                    <ui:insert name="topbuttonbar" />
+                </ul>
+            </div>
+        </h:form>
+        <div class="progress">
+            <div class="indeterminate"></div>
+        </div>
+    </div>
+</ui:composition>

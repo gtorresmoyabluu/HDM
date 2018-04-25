@@ -1,0 +1,26 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+		xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                template="/WEB-INF/layout/template.xhtml">
+
+    <ui:define name="topbuttonbar">
+	<p:remoteCommand name="doRefresh" action="refresh()" update=":card" />
+        <li>
+	    <a href="#" onclick="doRefresh();" onfocus="blur();">
+		<i title="Refresh" class="topbar-icon material-icons">autorenew</i> <span class="topbar-item-name">Refresh</span>
+            </a>
+	</li>
+    </ui:define>
+
+    <ui:define name="content">
+	<div class="ui-g">
+	    <div class="ui-g-12">
+		<h:panelGroup id="card" layout="block" styleClass="card">
+		    <h:outputText value="#{sessionScope.test_output}" />
+		</h:panelGroup>
+	    </div>
+	</div>
+    </ui:define>
+</ui:composition>

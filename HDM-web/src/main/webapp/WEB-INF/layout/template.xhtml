@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <f:view contentType="text/html" locale="#{locale.current}">
+	<h:head>
+	    <f:facet name="first">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="theme-color" content="schaman" />
+
+		<link rel="shortcut icon" type="image/x-icon" href="#{request.contextPath}/resources/bluu/images/favicon.ico" />
+
+	    </f:facet>
+
+	    <title><h:outputText value="#{sessionScope.global_title}" /></title>
+
+
+	    <!-- HOJA DE ESTILOS -->
+	    <h:outputStylesheet name="css/nanoscroller.css" library="ultima-layout" />
+	    <h:outputStylesheet name="css/animate.css" library="ultima-layout" />
+	    <h:outputStylesheet name="css/ripple.css" library="ultima-layout" />
+	    <h:outputStylesheet name="css/layout-schaman.css" library="ultima-layout" />
+	    <h:outputStylesheet name="css/template.css" library="bluu" />
+
+	    <!-- JAVASCRIPTS -->
+
+	    <h:outputScript name="jquery/jquery.js" library="primefaces" />
+	    <h:outputScript name="jquery/jquery-plugins.js" library="primefaces" />
+
+	    <h:outputScript name="js/nanoscroller.js" library="ultima-layout" />
+	    <h:outputScript name="js/layout.js" library="ultima-layout" />
+	    <h:outputScript name="js/ripple.js" library="ultima-layout" />
+	    <h:outputScript name="js/swipe.js" library="ultima-layout" />
+	    <ui:insert name="head" />
+
+	</h:head>
+
+	<h:body styleClass="main-body layout-compact">
+
+	    <div class="layout-wrapper menu-layout-overlay">
+
+		<ui:include src="./topbar.xhtml" />
+		<ui:include src="./menu.xhtml" />
+
+		<div class="layout-main">
+
+		    <p:growl id="msgs" autoUpdate="true" life="2500" />
+
+		    <div class="sticky-footer">
+			<ui:insert name="content" />
+		    </div>
+		    <ui:include src="./footer.xhtml" />
+		</div>
+
+	    </div>
+
+	    <p:ajaxStatus style="width:32px;height:32px;position:fixed;right:7px;bottom:7px" onstart="show()" onsuccess="hide()"/>
+
+	    <p:idleMonitor onactive="PF('sessionTimeOutDialog').show();" timeout="#{session.maxInactiveInterval * 1000}" />
+	    <p:dialog header="#{sessionScope.error_sessionTimeOut_header}" widgetVar="sessionTimeOutDialog" modal="true"
+		      closable="false" width="500" visible="false" resizable="false" draggable="false">
+		<h:outputText value="#{sessionScope.error_sessionTimeOut.text}" />
+		<div align="center" style="padding-top: 15px">
+		    <p:commandButton value="#{sessionScope.button_accept}" id="ajax" styleClass="ui-priority-primary"
+				     style="margin-bottom:10px"
+				     onclick="window.location = '#{facesContext.externalContext.requestContextPath}/index.xhtml';" />
+		</div>
+
+	    </p:dialog>
+
+	    <p:tooltip position="left" escape="false" globalSelector="a,:input,:button,span,i" style="width: 200px;" />
+
+	</h:body>
+
+	<script>
+	    function show() {
+		$(".progress").show();
+	    }
+	    function hide() {
+		$(".progress").hide();
+	    }
+	</script>
+    </f:view>
+</html>

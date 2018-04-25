@@ -1,0 +1,59 @@
+/* DBFILTER comp*/
+
+/*-New DashBoard-*/
+.dashboardFilterBar {
+    background-color: #e4e4e4;
+    margin-bottom: 0px !important;
+    padding: 8px 16px 8px 16px !important;
+}
+
+.dashboardFilterBar a, .dashboardFilterBar a:visited {
+    color: #3e464c !important;
+}
+
+.dashboardFilterBar i {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.dashboardFilterBar span {
+    vertical-align: middle;
+}
+
+.filterTabView .ui-tabs {
+    background-color: transparent !important;
+    border: 0px !important
+}
+
+.filterTabView .ui-tabs.ui-tabs-left>.ui-tabs-nav {
+    width: auto !important;
+    background-color: transparent !important;
+    border-right: 0px !important;
+}
+
+.filterTabView .ui-tabs .ui-tabs-nav>li.ui-state-active {
+    background-color: transparent !important;
+}
+
+.filterTabView .ui-tabs-left>.ui-tabs-nav {
+    height: 230px !important;
+}
+
+.filterTabView .ui-state-hover {
+    background-color: transparent !important;
+}
+
+.filterTabView ul>li:first-child {
+    margin-top: 20px !important;
+}
+
+.filterTabView .ui-datagrid-content {
+    background-color: transparent !important;
+}
+
+.dashboardButtons {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}

@@ -1,0 +1,256 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    template="/WEB-INF/layout/template.xhtml">
+    <ui:define name="topbuttonbar">
+	<p:remoteCommand name="doRefresh" action="#{roles.doRefresh}" update=":card" />
+        <p:remoteCommand name="fixSearch" action="#{roles.doSecondStepFixSearch()}" update=":form_dt:dataTable"/>
+        <li>
+	    <a href="#" onclick="doRefresh();" onfocus="blur();">
+		<i title="#{sessionScope.button_refresh}" class="topbar-icon material-icons">autorenew</i>
+		<span class="topbar-item-name">#{sessionScope.button_refresh}</span>
+            </a>
+	</li>
+    </ui:define>
+    <ui:define name="content">
+	<div class="ui-g">
+	    <div class="ui-g-12">
+		<h:panelGroup id="card" layout="block" styleClass="card">
+		    <!-- Buttons -->
+		    <p:outputPanel id="buttonPanel">
+			<h:form id="form_bt">
+			    <div style="float: left" class="webTitles">
+				<h1>
+				    <h:outputText value="#{sessionScope.roles_title}" rendered="#{roles.viewType.name == 'list'}" />
+				    <h:outputText value="#{sessionScope.roles_title_detail}" rendered="#{roles.viewType.name == 'detail'}" />
+				    <h:outputText value="#{sessionScope.roles_title_edit}" rendered="#{roles.viewType.name == 'edit'}" />
+				    <h:outputText value="#{sessionScope.roles_title_add}" rendered="#{roles.viewType.name == 'add'}" />
+				    <h:outputText value="#{sessionScope.roles_title_access}" rendered="#{roles.viewType.name == 'access'}" />
+				</h1>
+			    </div>
+			    <div align="right">
+				<p:commandButton icon="ui-icon-playlist-add"
+						 styleClass="#{roles.viewType.name == 'add' ? 'active' : ''}"
+						 title="#{sessionScope.roles_title_add}" update=":card" action="#{roles.doChangeAdd}"
+						 immediate="true" />
+				<p:spacer width="10" />
+				<p:commandButton id="dynaButton" icon="ui-icon-file-download" title="#{button_export}" />
+				<p:menu overlay="true" trigger="dynaButton" my="left top" at="left bottom">
+				    <p:menuitem value="#{sessionScope.table_export_all}" action="#{roles.doExport}" ajax="false">
+					<f:setPropertyActionListener value="false" target="#{roles.exportPageOnly}" />
+					<f:setPropertyActionListener value="csv" target="#{roles.exportFormat}" />
+				    </p:menuitem>
+				    <p:menuitem value="#{sessionScope.table_export_current}" action="#{roles.doExport}" ajax="false">
+					<f:setPropertyActionListener value="true" target="#{roles.exportPageOnly}" />
+					<f:setPropertyActionListener value="csv" target="#{roles.exportFormat}" />
+				    </p:menuitem>
+				</p:menu>
+				<p:spacer width="10" />
+				<p:commandButton id="toggler" type="button" style="float:right" icon="ui-icon-grid-on"
+						 title="#{sessionScope.button_togglercolumns}" styleClass="showOnDesktop" />
+				<p:columnToggler datasource=":form_dt:dataTable" trigger="toggler">
+				    <p:ajax event="toggle" listener="#{roles.doOnColumnToggle}" />
+				</p:columnToggler>
+			    </div>
+			</h:form>
+		    </p:outputPanel>
+		    <!-- Add Role -->
+		    <h:panelGroup rendered="#{roles.viewType.name == 'add'}">
+			<h:form id="form_at">
+			    <p:focus/>
+                            <p:spacer height="10" />
+                            <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                                <h:panelGroup styleClass="md-inputfield ">
+                                    <p:inputText id="roleAdd" label="#{sessionScope.roles_table_name}"
+                                                 value="#{roles.currentItem.name}" required="true"
+                                                 requiredMessage="#{sessionScope.roles_name_required}" validator="notEmptyValidator"
+                                                 validatorMessage="#{sessionScope.roles_name_required}" maxlength="64" />
+                                    <label>#{sessionScope.roles_table_name}</label>
+                                </h:panelGroup>
+				<h:outputText value="" />
+                            </p:panelGrid>
+                            <p:spacer height="10" />
+                            <div align="right">
+                                <p:blockUI block="processAdd" trigger="processAdd" />
+                                <p:blockUI block="processCancelAdd" trigger="processCancelAdd" />
+                                <p:commandButton id="processAdd" value="#{sessionScope.button_save}" update=":card"
+                                                 action="#{roles.doAdd}" styleClass="ui-priority-primary" style="margin-bottom:10px" />
+                                <p:spacer width="5" />
+                                <p:commandButton id="processCancelAdd" value="#{sessionScope.button_cancel}"
+                                                 action="#{roles.doSetViewTypeList}" immediate="true" update=":card" process="@this"
+                                                 styleClass="ui-priority-primary" style="margin-bottom:10px">
+                                    <p:resetInput target="@form" />
+                                </p:commandButton>
+                            </div>
+                        </h:form>
+		    </h:panelGroup>
+		    <!-- Detail Rol -->
+                    <h:panelGroup rendered="#{roles.viewType.name == 'detail'}">
+                        <p:focus/>
+                        <p:spacer height="10" />
+                        <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid compact">
+                            <h:outputLabel for="roleNameDetail" value="#{sessionScope.roles_table_name}:" styleClass="itemLabel" />
+                            <h:outputText id="roleNameDetail" value="#{roles.currentItem.name}" />
+                            <h:outputText value="" />
+                        </p:panelGrid>
+                        <p:spacer height="10" />
+                        <div align="right">
+                            <p:blockUI block="processCancelDetail" trigger="processCancelDetail" />
+                            <p:commandButton id="processCancelDetail" value="#{sessionScope.button_cancel}" update=":card"
+                                             action="#{roles.doSetViewTypeList}" styleClass="ui-priority-primary" style="margin-bottom:10px"
+                                             oncomplete="PF('table').unselectAllRows()" />
+                        </div>
+                    </h:panelGroup>
+		    <!-- Edit Role -->
+		    <h:panelGroup rendered="#{roles.viewType.name == 'edit'}">
+			<p:focus/>
+                        <p:spacer height="10"/>
+			<h:form id="form_et">
+                            <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                                <h:panelGroup styleClass="md-inputfield">
+                                    <p:inputText id="roleEdit" label="#{sessionScope.roles_table_name}"
+                                                 value="#{roles.currentItem.name}" required="true"
+                                                 requiredMessage="#{sessionScope.roles_name_required}" validator="notEmptyValidator"
+                                                 validatorMessage="#{sessionScope.roles_name_required}" maxlength="64" />
+                                    <label>#{sessionScope.roles_table_name}</label>
+                                </h:panelGroup>
+				<h:outputText value="" />
+                            </p:panelGrid>
+                            <p:spacer height="10" />
+                            <div align="right">
+                                <p:blockUI block="processEdit" trigger="processEdit" />
+                                <p:blockUI block="processCancelEdit" trigger="processCancelEdit" />
+
+                                <p:commandButton id="processEdit" value="#{sessionScope.button_save}" action="#{roles.doEdit}"
+                                                 update=":card" styleClass="ui-priority-primary" style="margin-bottom:10px" />
+                                <p:spacer width="5" />
+
+                                <p:commandButton id="processCancelEdit" value="#{sessionScope.button_cancel}"
+                                                 action="#{roles.doSetViewTypeList}" immediate="true" update=":card" process="@this"
+                                                 styleClass="ui-priority-primary" style="margin-bottom:10px">
+                                    <p:resetInput target="@form" />
+                                </p:commandButton>
+
+                            </div>
+
+                        </h:form>
+		    </h:panelGroup>
+		    <!-- Detail Rol -->
+                    <h:panelGroup rendered="#{roles.viewType.name == 'access'}">
+			<p:focus/>
+                        <p:spacer height="10"/>
+			<h:form id="form_ac">
+			    Access
+			    <p:spacer height="10" />
+                            <div align="right">
+                                <p:blockUI block="accessCancelAdd" trigger="accessCancelAdd" />
+                                <p:commandButton id="accessCancelAdd" value="#{sessionScope.button_cancel}"
+                                                 action="#{roles.doSetViewTypeList}" immediate="true" update=":card" process="@this"
+                                                 styleClass="ui-priority-primary" style="margin-bottom:10px">
+                                    <p:resetInput target="@form" />
+                                </p:commandButton>
+                            </div>
+                        </h:form>
+		    </h:panelGroup>
+
+                    <p:spacer height="10" />
+		    <!-- Table Roles -->
+                    <p:outputPanel>
+                        <h:form id="form_dt">
+                            <p:dataTable
+				rendered="#{roles.showtable}"
+				id="dataTable"
+				rowKey="#{item.id}"
+				var="item"
+				editable="false"
+				lazy="true"
+				widgetVar="table"
+				reflow="true"
+				emptyMessage="#{sessionScope.table_empty}"
+				value="#{roles.items}"
+				selection="#{roles.currentItem}"
+				selectionMode="single"
+				rowHover="true"
+				paginator="true"
+				rows="10"
+				paginatorPosition="bottom"
+				currentPageReportTemplate="(#{sessionScope.table_records}: {startRecord} - {endRecord} #{sessionScope.table_of} {totalRecords}, #{sessionScope.table_page} {currentPage} #{sessionScope.table_of} {totalPages})"
+				paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+				rowsPerPageTemplate="5,10,15,20,50">
+
+                                <f:facet name="header">
+                                    <h:outputText value="#{sessionScope.roles_table_title}" />
+                                </f:facet>
+
+                                <p:ajax event="rowSelect" listener="#{roles.doChangeDetail}" oncomplete="window.scrollTo(0,0);" update=":card" />
+                                <p:ajax event="rowUnselect" listener="#{roles.doSetViewTypeList}" update=":card" />
+				<!--cabecera-->
+                                <p:column
+				    sortBy="#{item.name}"
+				    visible="#{roles.toggleableColumns[0]}"
+				    exportable="#{roles.toggleableColumns[0]}"
+				    filterBy="#{item.name}"
+				    filterMatchMode="contains"
+				    headerText="#{sessionScope.roles_table_name}">
+                                    <h:outputText value="#{item.name}"/>
+                                </p:column>
+
+                                <p:column exportable="false" toggleable="false" width="113px;" >
+
+                                    <p:commandButton icon="ui-icon ui-icon-edit"
+                                                     styleClass="#{roles.currentItem.id == item.id and roles.viewType.name == 'edit' ? 'active' : ''}"
+                                                     update=":card" title="#{sessionScope.button_edit}" action="#{roles.doChangeEdit}"
+                                                     immediate="true" oncomplete="PF('table').unselectAllRows(); window.scrollTo(0,0);">
+                                        <f:setPropertyActionListener value="#{item}" target="#{roles.currentItem}" />
+                                    </p:commandButton>
+                                    <p:spacer width="5" />
+                                    <p:commandButton icon="ui-icon ui-icon-vpn-key"
+                                                     styleClass="#{roles.currentItem.id == item.id and roles.viewType.name == 'access' ? 'active' : ''}"
+                                                     update=":card" title="#{sessionScope.button_access}" action="#{roles.doChangeAccess}"
+                                                     immediate="true" oncomplete="PF('table').unselectAllRows();PF('table').hide(); window.scrollTo(0,0);">
+                                        <f:setPropertyActionListener value="#{item}" target="#{roles.currentItem}" />
+                                    </p:commandButton>
+                                    <p:spacer width="5" />
+                                    <p:commandButton icon="ui-icon ui-icon-trash" title="#{sessionScope.button_delete}"
+                                                     oncomplete="PF('confirmDelete').show();" actionListener="#{roles.setCurrentItem(item)}"
+                                                     immediate="true" disabled="#{item.id == sessionFace.userLogged.idRole.id}" />
+                                </p:column>
+
+                            </p:dataTable>
+			    <p:dataTable
+				rendered="#{!roles.showtable}"
+				selectionMode="single"
+				rowHover="true"
+				paginator="true"
+				rows="10"
+				paginatorPosition="bottom"
+				currentPageReportTemplate="(#{sessionScope.table_records}: {startRecord} - {endRecord} #{sessionScope.table_of} {totalRecords}, #{sessionScope.table_page} {currentPage} #{sessionScope.table_of} {totalPages})"
+				paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+				rowsPerPageTemplate="5,10,15,20,50">
+
+                                <f:facet name="header">
+                                    <h:outputText value="#{sessionScope.roles_title_access}" />
+                                </f:facet>
+			    </p:dataTable>
+                        </h:form>
+
+                    </p:outputPanel>
+		</h:panelGroup>
+
+		<p:confirmDialog id="confirmDialog" message="#{sessionScope.roles_delete_disclaim}"
+				 header="#{sessionScope.roles_delete_deleteroles}" severity="alert" widgetVar="confirmDelete">
+		    <p:blockUI block="delete" trigger="delete" />
+		    <p:blockUI block="cancelDelete" trigger="delete" />
+
+		    <p:commandButton id="delete" value="#{sessionScope.button_accept}" action="#{roles.doDelete}"
+				     update=":form_dt:dataTable" oncomplete="PF('confirmDelete').hide();" />
+		    <p:commandButton value="#{sessionScope.button_cancel}" id="cancelDelete"
+				     onclick="PF('confirmDelete').hide();" type="button" />
+		</p:confirmDialog>
+	    </div>
+	</div>
+    </ui:define>
+</ui:composition>
