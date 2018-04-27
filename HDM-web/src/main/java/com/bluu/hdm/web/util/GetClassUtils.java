@@ -26,18 +26,22 @@ public abstract class GetClassUtils {
     public static List<Object> castToList(Class<?> viewClass, List<Object> objList) {
 	Class<?> modelClass = getModelClass(viewClass);
 	List<Object> result = new ArrayList<>();
-	try {// Se ejecuta la consulta
-	    List<Object> list = objList;
-
-	    // Se parsea la respuesta a objetos POJO
-	    for (Object model : list) {
-		Constructor<?> constructor = viewClass.getDeclaredConstructor(modelClass);
-		constructor.setAccessible(true);
-		Object modelInt = mapper.convertValue(model, getModelClass(viewClass));
-		result.add(constructor.newInstance(modelInt));
-	    }
-	} catch (ReflectiveOperationException | IllegalArgumentException | SecurityException e) {
+	if (objList == null) {
 	    result = new ArrayList<>(0);
+	} else {
+	    try {// Se ejecuta la consulta
+		List<Object> list = objList;
+
+		// Se parsea la respuesta a objetos POJO
+		for (Object model : list) {
+		    Constructor<?> constructor = viewClass.getDeclaredConstructor(modelClass);
+		    constructor.setAccessible(true);
+		    Object modelInt = mapper.convertValue(model, getModelClass(viewClass));
+		    result.add(constructor.newInstance(modelInt));
+		}
+	    } catch (ReflectiveOperationException | IllegalArgumentException | SecurityException e) {
+		result = new ArrayList<>(0);
+	    }
 	}
 
 	return result;

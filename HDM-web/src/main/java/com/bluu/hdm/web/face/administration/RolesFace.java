@@ -6,17 +6,22 @@ import com.bluu.hdm.web.exporter.DataTableExporter;
 import com.bluu.hdm.web.exporter.Exporter;
 import com.bluu.hdm.web.exporter.ExporterFactory;
 import com.bluu.hdm.web.model.APILazyDataModel;
+import com.bluu.hdm.web.pojo.Access;
 import com.bluu.hdm.web.pojo.Role;
 import com.bluu.hdm.web.pojo.User;
 import com.bluu.hdm.web.rest.ConsumeREST;
 import com.bluu.hdm.web.rest.IConsumeREST;
 import com.bluu.hdm.web.util.AuthorizationUtil;
+import com.bluu.hdm.web.util.GetClassUtils;
 import com.bluu.hdm.web.util.MessageUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -28,7 +33,9 @@ import org.primefaces.component.datatable.DataTable;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.ToggleEvent;
+import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.TreeNode;
 import org.primefaces.model.Visibility;
 
 @ViewScoped
@@ -51,8 +58,17 @@ public class RolesFace implements Serializable {
 
     private ViewTypeEnum viewType;
     private List<Boolean> toggleableColumns;
+
     private LazyDataModel<Object> items;
     private Role currentItem;
+
+    /* permissionsTree : es el objeto con el que trabaja el treetable de la vista */
+    private TreeNode permissionsTree;
+    /* treeNodeExpandCollapse : un flag para determinar cuando se expande
+    y cuando se colapsa el treetable de la vista*/
+    private boolean treeNodeExpandCollapse;
+
+    private Access currentAccess;
 
     @PostConstruct
     public void init() {
@@ -78,18 +94,19 @@ public class RolesFace implements Serializable {
 
     public void doRefresh() {
 	doRefreshWOFilter();
+	treeNodeExpandCollapse = true;
     }
 
     public void doRefreshWOFilter() {
 	items = null;
 	currentItem = new Role();
-	showtable = true;
+	showtable = false;
 	doSetViewTypeList();
     }
 
     public void doSetViewTypeList() {
 	viewType = ViewTypeEnum.list;
-	showtable = true;
+	showtable = !showtable;
     }
 
     public void doChangeAdd() {
@@ -124,7 +141,8 @@ public class RolesFace implements Serializable {
 	currentItem = mapper.convertValue(currentItem, Role.class);
 	if (viewType != ViewTypeEnum.access) {
 	    viewType = ViewTypeEnum.access;
-	    showtable = false;
+	    getAccessTree(currentItem.getId());
+	    showtable = !showtable;
 	}
     }
 
@@ -300,4 +318,73 @@ public class RolesFace implements Serializable {
 	this.showtable = showtable;
     }
 
+    public TreeNode getPermissionsTree() {
+	return permissionsTree;
+    }
+
+    public void setPermissionsTree(TreeNode permissionsTree) {
+	this.permissionsTree = permissionsTree;
+    }
+
+    public boolean isTreeNodeExpandCollapse() {
+	return treeNodeExpandCollapse;
+    }
+
+    public void setTreeNodeExpandCollapse(boolean treeNodeExpandCollapse) {
+	this.treeNodeExpandCollapse = treeNodeExpandCollapse;
+    }
+
+    public void collapseAll() {
+	setExpandedRecursively(permissionsTree, false);
+    }
+
+    public void expandAll() {
+	setExpandedRecursively(permissionsTree, true);
+    }
+
+    private void setExpandedRecursively(final TreeNode node, final boolean expanded) {
+	node.getChildren().forEach((child) -> {
+	    setExpandedRecursively(child, expanded);
+	});
+	node.setExpanded(expanded);
+    }
+
+    public void doCheckboxClick(Long idRole, Access ac) {
+	System.out.println(String.format("%s %s %s %s", idRole, ac.getParent(), ac.getId(), ac.getActive()));
+	currentAccess = new Access();
+	currentAccess.setIdRole(idRole);
+	if (ac.getParent() == null) { //Permisos al Padre y todos sus hijos
+	    currentAccess.setParent(ac.getId());
+	    currentAccess.setId(0l);
+	} else {//Permisos al padre y solo al hijo
+	    currentAccess.setParent(0l);
+	    currentAccess.setId(ac.getId());
+	}
+
+	apiRest.postRestAPI(String.format("%s/accessRol", BEAN_NAME, 1), params, currentAccess);
+	permissionsTree = null;
+	getAccessTree(idRole);
+    }
+
+    private void getAccessTree(Long id) {
+	if (id != null) {
+	    TreeNode root = new DefaultTreeNode("Permissions", null);
+	    List<Access> parents = GetClassUtils.castToList(Access.class, apiRest.getListRestAPI(String.format("%s/%s/parent", BEAN_NAME, id), params));
+	    if (!parents.isEmpty()) {
+		parents.forEach((parent) -> {
+		    List<Access> childs = GetClassUtils.castToList(Access.class, apiRest.getListRestAPI(String.format("%s/%s/parent/%s", BEAN_NAME, id, parent.getId()), params));
+		    if (!childs.isEmpty()) {
+			TreeNode parentNode = new DefaultTreeNode(parent, root);
+			childs.forEach((child) -> {
+			    parentNode.getChildren().add(new DefaultTreeNode(child));
+			});
+			parentNode.setExpanded(true);
+		    } else {
+			root.getChildren().add(new DefaultTreeNode(parent));
+		    }
+		});
+	    }
+	    permissionsTree = root;
+	}
+    }
 }

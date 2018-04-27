@@ -16,6 +16,7 @@
 	</li>
     </ui:define>
     <ui:define name="content">
+        <h:outputStylesheet name="css/roles.css" library="bluu" />
 	<div class="ui-g">
 	    <div class="ui-g-12">
 		<h:panelGroup id="card" layout="block" styleClass="card">
@@ -138,12 +139,17 @@
 
                         </h:form>
 		    </h:panelGroup>
-		    <!-- Detail Rol -->
+		    <!-- Access for Rol -->
                     <h:panelGroup rendered="#{roles.viewType.name == 'access'}">
 			<p:focus/>
                         <p:spacer height="10"/>
 			<h:form id="form_ac">
-			    Access
+			    <p:focus/>
+			    <p:spacer height="10" />
+			    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid compact">
+				<h:outputLabel for="roleNameAccess" value="#{sessionScope.roles_table_name}:" styleClass="itemLabel" />
+				<h:outputText id="roleNameAccess" value="#{roles.currentItem.name}" />
+			    </p:panelGrid>
 			    <p:spacer height="10" />
                             <div align="right">
                                 <p:blockUI block="accessCancelAdd" trigger="accessCancelAdd" />
@@ -158,7 +164,7 @@
 
                     <p:spacer height="10" />
 		    <!-- Table Roles -->
-                    <p:outputPanel>
+                    <p:outputPanel id="tables">
                         <h:form id="form_dt">
                             <p:dataTable
 				rendered="#{roles.showtable}"
@@ -209,8 +215,8 @@
                                     <p:spacer width="5" />
                                     <p:commandButton icon="ui-icon ui-icon-vpn-key"
                                                      styleClass="#{roles.currentItem.id == item.id and roles.viewType.name == 'access' ? 'active' : ''}"
-                                                     update=":card" title="#{sessionScope.button_access}" action="#{roles.doChangeAccess}"
-                                                     immediate="true" oncomplete="PF('table').unselectAllRows();PF('table').hide(); window.scrollTo(0,0);">
+                                                     update="tables,:card" title="#{sessionScope.button_access}" action="#{roles.doChangeAccess}"
+                                                     immediate="true" onclick="PF('tableAccess').show();PF('table').hide();" oncomplete="PF('table').unselectAllRows();window.scrollTo(0,0);">
                                         <f:setPropertyActionListener value="#{item}" target="#{roles.currentItem}" />
                                     </p:commandButton>
                                     <p:spacer width="5" />
@@ -220,23 +226,38 @@
                                 </p:column>
 
                             </p:dataTable>
-			    <p:dataTable
-				rendered="#{!roles.showtable}"
-				selectionMode="single"
-				rowHover="true"
-				paginator="true"
-				rows="10"
-				paginatorPosition="bottom"
-				currentPageReportTemplate="(#{sessionScope.table_records}: {startRecord} - {endRecord} #{sessionScope.table_of} {totalRecords}, #{sessionScope.table_page} {currentPage} #{sessionScope.table_of} {totalPages})"
-				paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-				rowsPerPageTemplate="5,10,15,20,50">
+			</h:form>
+			<!-- Access for Roles -->
+			<h:panelGroup id="rolesAdmin" layout="block" rendered="#{!roles.showtable}">
+			    <h:form>
+				<p:treeTable
+				    id="tree"
+				    styleClass="permissionTable"
+				    value="#{roles.permissionsTree}"
+				    var="permission"
+				    selectionMode="single"
+				    scrollable="true">
+				    <p:ajax event="expand" listener="#{roles.expandAll}" update="rolesAdmin"/>
+				    <p:ajax event="collapse" listener="#{roles.collapseAll}" update="rolesAdmin"/>
+				    <f:facet name="header">
+					#{sessionScope.roles_administration}
+				    </f:facet>
 
-                                <f:facet name="header">
-                                    <h:outputText value="#{sessionScope.roles_title_access}" />
-                                </f:facet>
-			    </p:dataTable>
-                        </h:form>
-
+				    <p:column style="width:290px">
+					<h:outputText value="#{permission.description}"/>
+				    </p:column>
+				    <p:column>
+					<h:panelGroup layout="block" style="text-align: center">
+					    <p:selectBooleanCheckbox styleClass="checkboxPermission" value="#{permission.active}">
+						<p:ajax update="rolesAdmin" listener="#{roles.doCheckboxClick(roles.currentItem.id, permission)}" process="@this" />
+					    </p:selectBooleanCheckbox>
+					</h:panelGroup>
+				    </p:column>
+				</p:treeTable>
+<!--				<p:remoteCommand id="savePermissionsId" name="savePermissions" action="#{role.doSaveRoles}" />
+				<p:blockUI block="card" trigger="savePermissionsId, @(.checkboxPermission)" />-->
+			    </h:form>
+			</h:panelGroup>
                     </p:outputPanel>
 		</h:panelGroup>
 

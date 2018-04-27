@@ -6,6 +6,7 @@
 package com.bluu.hdm.rest.dao.implement;
 
 import com.bluu.hdm.rest.dao.interfaces.IRoleDAO;
+import com.bluu.hdm.rest.entity.AccessEntity;
 import com.bluu.hdm.rest.entity.RoleEntity;
 import com.bluu.hdm.rest.entity.UserEntity;
 import com.bluu.hdm.rest.repository.RoleRepository;
@@ -14,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.StoredProcedureQuery;
 import javax.transaction.Transactional;
 
 import org.apache.logging.log4j.LogManager;
@@ -36,6 +40,9 @@ public class RoleDAOImpl implements IRoleDAO {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    EntityManager em;
 
     @Override
     public RoleEntity save(RoleEntity r) {
@@ -77,11 +84,11 @@ public class RoleDAOImpl implements IRoleDAO {
     @Override
     public List<UserEntity> findAllByRoleID(long id_role) {
 	List<UserEntity> list = new ArrayList<>();
-	for (RoleEntity role : roleRepository.findAll().stream().filter(r -> r.getId() == id_role).collect(Collectors.toList())) {
-	    for (UserEntity user : role.getUserEntitySet()) {
+	roleRepository.findAll().stream().filter(r -> r.getId() == id_role).collect(Collectors.toList()).forEach((role) -> {
+	    role.getUserEntitySet().forEach((user) -> {
 		list.add(user);
-	    }
-	}
+	    });
+	});
 	return list;
     }
 

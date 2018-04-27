@@ -12,16 +12,15 @@ import com.bluu.hdm.rest.repository.AccessRepository;
 import com.bluu.hdm.rest.repository.RoleRepository;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import javax.persistence.EntityManager;
+import javax.persistence.StoredProcedureQuery;
 import javax.transaction.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.NonTransientDataAccessException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -38,6 +37,9 @@ public class AccessDAOImpl implements IAccessDAO {
 
     @Autowired
     RoleRepository roleRepository;
+
+    @Autowired
+    EntityManager em;
 
     @Override
     public AccessEntity save(AccessEntity access) {
@@ -97,5 +99,48 @@ public class AccessDAOImpl implements IAccessDAO {
 	    });
 	}
 	return list;
+    }
+
+    @Override
+    public List<AccessEntity> getAccessParent(Long id_role) {
+	StoredProcedureQuery query = em.createNamedStoredProcedureQuery("getAccessParent");
+	query.setParameter("pIdRole", id_role);
+	List<AccessEntity> result = query.getResultList();
+	return result;
+    }
+
+    @Override
+    public List<AccessEntity> getAccessChild(Long parent, Long id_role) {
+	StoredProcedureQuery query = em.createNamedStoredProcedureQuery("getAccessChild");
+	query.setParameter("pIdRole", id_role);
+	query.setParameter("pIdParent", parent);
+	List<AccessEntity> result = query.getResultList();
+	return result;
+    }
+
+    @Override
+    public List<AccessEntity> getAccessChildByIdRol(Long parent, Long id_role) {
+	StoredProcedureQuery query = em.createNamedStoredProcedureQuery("getAccessChildByIdRol");
+	query.setParameter("pIdRole", id_role);
+	query.setParameter("pIdParent", parent);
+	List<AccessEntity> result = query.getResultList();
+	return result;
+    }
+
+    @Override
+    public List<AccessEntity> getAccessByIdRol(Long id) {
+	StoredProcedureQuery query = em.createNamedStoredProcedureQuery("getAccessByRolId");
+	query.setParameter("pIdRole", id);
+	List<AccessEntity> result = query.getResultList();
+	return result;
+    }
+
+    @Override
+    public void setAccessToRol(Long id_role, Long child, Long parent) {
+	StoredProcedureQuery query = em.createNamedStoredProcedureQuery("setAccessToRol");
+	query.setParameter("pIdRole", id_role);
+	query.setParameter("pIdAccess", child);
+	query.setParameter("pIdParent", parent);
+	query.execute();
     }
 }

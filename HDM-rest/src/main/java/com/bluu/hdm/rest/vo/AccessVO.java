@@ -22,6 +22,10 @@ public class AccessVO {
     private String icon;
     private Long parent;
 
+    private Boolean active;
+
+    private Long idRole;
+
     @JsonProperty("child")
     private List<AccessVO> child;
     @JsonIgnore
@@ -81,6 +85,22 @@ public class AccessVO {
 
     public void setIcon(String icon) {
 	this.icon = icon;
+    }
+
+    public Boolean getActive() {
+	return active;
+    }
+
+    public void setActive(Boolean active) {
+	this.active = active;
+    }
+
+    public Long getIdRole() {
+	return idRole;
+    }
+
+    public void setIdRole(Long idRole) {
+	this.idRole = idRole;
     }
 
 }

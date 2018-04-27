@@ -142,7 +142,7 @@ public class ConsumeREST implements IConsumeREST<Object> {
 	try {
 	    client = Client.create(clientConfig);
 	    WebResource webResource = client.resource(String.format("%s/%s/", URL_API, API_VERSION) + operation);
-	    webResource.setProperty("Content-Type", "application/x-www-form-urlencoded");
+	    webResource.setProperty("Content-Type", MediaType.APPLICATION_JSON);//"application/x-www-form-urlencoded");
 	    ClientResponse response = webResource
 		    .queryParams(params)
 		    .accept(MediaType.APPLICATION_JSON)

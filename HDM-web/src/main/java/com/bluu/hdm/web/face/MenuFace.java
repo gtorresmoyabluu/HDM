@@ -5,6 +5,7 @@ import com.bluu.hdm.web.pojo.User;
 import com.bluu.hdm.web.rest.ConsumeREST;
 import com.bluu.hdm.web.rest.IConsumeREST;
 import com.bluu.hdm.web.util.AuthorizationUtil;
+import com.bluu.hdm.web.util.GetClassUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
@@ -121,7 +122,6 @@ public class MenuFace implements Serializable {
     }
 
     private List<Access> getMenu() {
-	//if (menu == null) {
 	if (userSession == null && AuthorizationUtil.getUserSession(FacesContext.getCurrentInstance()).getUser() != null) {
 	    userSession = AuthorizationUtil.getUserSession(FacesContext.getCurrentInstance()).getUser();
 	}
@@ -131,18 +131,7 @@ public class MenuFace implements Serializable {
 	if (!params.containsKey("access_token")) {
 	    params.add("access_token", userSession.getToken().getAccess_token());
 	}
-	List<Access> fullMenu;
-	List<Access> list = mapper.convertValue(
-		apiRest.getListRestAPI(String.format("roles/access/%s", userSession.getIdRole().getId()), params),
-		new TypeReference<List<Access>>() {
-	}
-	);
-	if (list != null) {
-	    fullMenu = new ArrayList<>();
-	    list.forEach(fullMenu::add);
-	    menu = fullMenu;
-	}
-	//}
+	menu = GetClassUtils.castToList(Access.class, apiRest.getListRestAPI(String.format("roles/access/%s", userSession.getIdRole().getId()), params));
 	return menu;
     }
 

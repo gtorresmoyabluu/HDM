@@ -15,5 +15,4 @@ import org.springframework.stereotype.Repository;
  */
 @Repository("accessRepository")
 public interface AccessRepository extends JpaRepository<AccessEntity, Long> {
-
 }

@@ -18,8 +18,29 @@ public class Access {
     private String code;
     private Long parent;
     private String icon;
+    private Boolean active;
+    private Long idRole;
+
     private List<Access> child;
     private List<Role> roles;
+
+    public Access() {
+    }
+
+    public Access(String description, Boolean active) {
+	this.description = description;
+	this.active = active;
+    }
+
+    public Access(Access acc) {
+	this.id = acc.getId();
+	this.description = acc.getDescription();
+	this.code = acc.getCode();
+	this.parent = acc.getParent();
+	this.icon = acc.getIcon();
+	this.active = acc.getActive();
+	this.child = acc.getChild();
+    }
 
     public String getIcon() {
 	return icon;
@@ -75,6 +96,22 @@ public class Access {
 
     public void setCode(String code) {
 	this.code = code;
+    }
+
+    public Boolean getActive() {
+	return active;
+    }
+
+    public void setActive(Boolean active) {
+	this.active = active;
+    }
+
+    public Long getIdRole() {
+	return idRole;
+    }
+
+    public void setIdRole(Long idRole) {
+	this.idRole = idRole;
     }
 
     @Override

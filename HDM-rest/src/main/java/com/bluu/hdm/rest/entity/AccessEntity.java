@@ -16,9 +16,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedStoredProcedureQueries;
+import javax.persistence.NamedStoredProcedureQuery;
+import javax.persistence.ParameterMode;
+import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -26,6 +29,81 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @Entity
 @Table(name = "access")
+
+@NamedStoredProcedureQueries({
+    @NamedStoredProcedureQuery(
+	    name = "getAccessByRolId",
+	    procedureName = "getAccessByRolId",
+	    resultClasses = {AccessEntity.class},
+	    parameters = {
+		@StoredProcedureParameter(
+			name = "pIdRole",
+			type = Long.class,
+			mode = ParameterMode.IN)
+	    })
+    ,
+    @NamedStoredProcedureQuery(
+	    name = "getAccessChildByIdRol",
+	    procedureName = "getAccessChildByIdRol",
+	    resultClasses = {AccessEntity.class},
+	    parameters = {
+		@StoredProcedureParameter(
+			name = "pIdRole",
+			type = Long.class,
+			mode = ParameterMode.IN)
+		,
+		@StoredProcedureParameter(
+			name = "pIdParent",
+			type = Long.class,
+			mode = ParameterMode.IN)
+	    })
+    ,
+    @NamedStoredProcedureQuery(
+	    name = "getAccessParent",
+	    procedureName = "getAccessParent",
+	    resultClasses = {AccessEntity.class},
+	    parameters = {
+		@StoredProcedureParameter(
+			name = "pIdRole",
+			type = Long.class,
+			mode = ParameterMode.IN)
+	    })
+    ,
+    @NamedStoredProcedureQuery(
+	    name = "getAccessChild",
+	    procedureName = "getAccessChild",
+	    resultClasses = {AccessEntity.class},
+	    parameters = {
+		@StoredProcedureParameter(
+			name = "pIdRole",
+			type = Long.class,
+			mode = ParameterMode.IN)
+		,
+		@StoredProcedureParameter(
+			name = "pIdParent",
+			type = Long.class,
+			mode = ParameterMode.IN)
+	    })
+    ,@NamedStoredProcedureQuery(
+	    name = "setAccessToRol",
+	    procedureName = "setAccessToRol",
+	    parameters = {
+		@StoredProcedureParameter(
+			name = "pIdRole",
+			type = Long.class,
+			mode = ParameterMode.IN)
+		,
+		@StoredProcedureParameter(
+			name = "pIdAccess",
+			type = Long.class,
+			mode = ParameterMode.IN)
+		,
+		@StoredProcedureParameter(
+			name = "pIdParent",
+			type = Long.class,
+			mode = ParameterMode.IN)
+	    })
+})
 public class AccessEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -48,6 +126,9 @@ public class AccessEntity implements Serializable {
 
     @Column(name = "parent")
     private Integer parent;
+
+    @Column(name = "active")
+    private Boolean active;
 
     @JoinTable(name = "access_role", joinColumns = {
 	@JoinColumn(name = "id_access", referencedColumnName = "id")}, inverseJoinColumns = {
@@ -110,6 +191,14 @@ public class AccessEntity implements Serializable {
 
     public void setIcon(String icon) {
 	this.icon = icon;
+    }
+
+    public Boolean getActive() {
+	return active;
+    }
+
+    public void setActive(Boolean active) {
+	this.active = active;
     }
 
     @Override

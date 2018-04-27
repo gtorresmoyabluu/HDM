@@ -1,6 +1,5 @@
 package com.bluu.hdm.web.model;
 
-import com.bluu.hdm.web.enums.ClassEnum;
 import com.bluu.hdm.web.pojo.Role;
 import com.bluu.hdm.web.rest.ConsumeREST;
 import com.bluu.hdm.web.rest.IConsumeREST;
@@ -11,7 +10,6 @@ import org.apache.log4j.Logger;
 import org.primefaces.model.LazyDataModel;
 
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;

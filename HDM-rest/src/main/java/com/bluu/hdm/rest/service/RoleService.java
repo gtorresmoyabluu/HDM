@@ -180,42 +180,25 @@ public class RoleService {
     @RequestMapping(value = "/access/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<AccessVO>> getAccessByRolID(@PathVariable(value = "id") long id) {
 	List<AccessVO> response = new ArrayList<>();
+	List<AccessVO> subMenu = new ArrayList<>();
 	try {
-	    List<AccessEntity> source = accessService.findAllByRoleID(id);
-	    if (source.isEmpty()) {
+	    List<AccessEntity> parent = accessService.getAccessByIdRol(id);
+	    if (parent.isEmpty()) {
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);// You many decide to return
 		// HttpStatus.NOT_FOUND
 	    } else {
-		source.sort(Comparator.comparingLong(AccessEntity::getId));
-		long idAux = 0;
-		boolean init = true;
-		List<AccessVO> sub = null;
-		AccessVO access = new AccessVO();
-		for (AccessEntity entity : source) {
-
-		    if (init) {
-			init = false;
-			idAux = entity.getId();
-			access = mapper.convertValue(entity, AccessVO.class);
-		    } else {
-			if (entity.getParent() != null && idAux == entity.getParent()) {
-			    if (sub == null) {
-				sub = new ArrayList<>();
-			    }
-			    sub.add(mapper.convertValue(entity, AccessVO.class));
-			    access.setChild(sub);
-			} else if (entity.getParent() == null) {
-			    response.add(access);
-			    idAux = entity.getId();
-			    sub = null;
-			    access = mapper.convertValue(entity, AccessVO.class);
-			}
+		for (AccessEntity entityParent : parent) {
+		    AccessVO accessParent = mapper.convertValue(entityParent, AccessVO.class);
+		    List<AccessEntity> child = accessService.getAccessChildByIdRol(accessParent.getId(), id);
+		    for (AccessEntity entityChild : child) {
+			subMenu.add(mapper.convertValue(entityChild, AccessVO.class));
 		    }
+		    if (subMenu.size() > 0) {
+			accessParent.setChild(subMenu);
+			subMenu = new ArrayList<>();
+		    }
+		    response.add(accessParent);
 		}
-		if (access != null) {
-		    response.add(access);
-		}
-
 		response.sort(Comparator.comparingLong(AccessVO::getId));
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	    }
@@ -264,5 +247,63 @@ public class RoleService {
 	    logger.error(String.format("Error: %s", ex.getMessage()));
 	}
 	return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @RequestMapping(value = "/{id}/parent", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<AccessVO>> getAccessParent(@PathVariable(value = "id") long id) {
+	List<AccessVO> response = new ArrayList<>();
+	try {
+	    List<AccessEntity> parent = accessService.getAccessParent(id);
+	    if (parent.isEmpty()) {
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);// You many decide to return
+		// HttpStatus.NOT_FOUND
+	    } else {
+		parent.stream().map((entityParent) -> mapper.convertValue(entityParent, AccessVO.class)).forEachOrdered((accessParent) -> {
+		    response.add(accessParent);
+		});
+		response.sort(Comparator.comparingLong(AccessVO::getId));
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	    }
+	} catch (IllegalArgumentException ex) {
+	    logger.error(String.format("Error: %s", ex.getMessage()));
+	}
+	return new ResponseEntity<>(HttpStatus.NO_CONTENT);// You many decide to return HttpStatus.NOT_FOUND
+    }
+
+    @RequestMapping(value = "/{id}/parent/{parent}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<AccessVO>> getAccessChild(@PathVariable(value = "id") long id, @PathVariable(value = "parent") long parent) {
+	List<AccessVO> response = new ArrayList<>();
+	try {
+	    List<AccessEntity> childs = accessService.getAccessChild(parent, id);
+	    if (childs.isEmpty()) {
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);// You many decide to return
+		// HttpStatus.NOT_FOUND
+	    } else {
+		childs.stream().map((entityChild) -> mapper.convertValue(entityChild, AccessVO.class)).forEachOrdered((child) -> {
+		    response.add(child);
+		});
+		response.sort(Comparator.comparingLong(AccessVO::getId));
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	    }
+	} catch (IllegalArgumentException ex) {
+	    logger.error(String.format("Error: %s", ex.getMessage()));
+	}
+	return new ResponseEntity<>(HttpStatus.NO_CONTENT);// You many decide to return HttpStatus.NOT_FOUND
+    }
+
+    @RequestMapping(value = "/accessRol", method = RequestMethod.POST)
+    public ResponseEntity<Void> addAccessRol(@RequestBody AccessVO accessRequest, UriComponentsBuilder ucBuilder) {
+	if (accessRequest.getIdRole() == null && accessRequest.getId() == null && accessRequest.getParent() == null) {
+	    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	Long idRole = accessRequest.getIdRole();
+	Long child = (accessRequest.getId() == null ? 0 : accessRequest.getId());
+	Long parent = (accessRequest.getParent() == null ? 0 : accessRequest.getParent());
+
+	accessService.setAccessToRol(idRole, child, parent);
+
+	HttpHeaders headers = new HttpHeaders();
+	headers.setLocation(ucBuilder.path("/{id}/parent").buildAndExpand(idRole).toUri());
+	return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 }
