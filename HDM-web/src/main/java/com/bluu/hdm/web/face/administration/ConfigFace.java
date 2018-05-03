@@ -265,4 +265,8 @@ public class ConfigFace implements Serializable {
 	    return "unknown";
 	}
     }
+
+    public String getMessage(String key) {
+	return MessageUtils.getMessage(key);
+    }
 }
