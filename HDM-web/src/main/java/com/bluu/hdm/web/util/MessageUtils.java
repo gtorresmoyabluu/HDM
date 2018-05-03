@@ -1,7 +1,6 @@
 package com.bluu.hdm.web.util;
 
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -56,5 +55,9 @@ public abstract class MessageUtils {
 			""
 		)
 	);
+    }
+
+    public static String getMessage(String claveMessage) {
+	return (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get(claveMessage);
     }
 }

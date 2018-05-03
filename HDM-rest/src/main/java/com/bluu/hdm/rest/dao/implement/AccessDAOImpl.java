@@ -143,4 +143,24 @@ public class AccessDAOImpl implements IAccessDAO {
 	query.setParameter("pIdParent", parent);
 	query.execute();
     }
+
+    @Override
+    public List<AccessEntity> getParents() {
+	StoredProcedureQuery query = em.createNamedStoredProcedureQuery("getParents");
+	List<AccessEntity> result = query.getResultList();
+	return result;
+    }
+
+    @Override
+    public List<AccessEntity> getChildsParent(Long idParent) {
+	StoredProcedureQuery query = em.createNamedStoredProcedureQuery("getChildsParent");
+	query.setParameter("pIdParent", idParent);
+	List<AccessEntity> result = query.getResultList();
+	return result;
+    }
+
+    @Override
+    public AccessEntity findBycode(String code) {
+	return accessRepository.findBycode(code).orElse(null);
+    }
 }

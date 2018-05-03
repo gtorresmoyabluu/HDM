@@ -10,6 +10,8 @@ import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -27,22 +29,60 @@ public class LicenseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private long id;
+
     @NotNull
     @Size(min = 1, max = 255)
     @Column(name = "code")
     private String code;
+
+    @NotNull
+    @Size(min = 1, max = 255)
+    @Column(name = "app")
+    private String app;
+
     @Size(max = 255)
     @Column(name = "version")
     private String version;
+
     @Size(max = 255)
     @Column(name = "asociated_ip")
     private String asociatedIp;
+
     @Column(name = "expiration_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date expirationDate;
 
+    @Column(nullable = false)
+    private boolean blocked = false;
+
     public LicenseEntity() {
+    }
+
+    public String getApp() {
+	return app;
+    }
+
+    public void setApp(String app) {
+	this.app = app;
+    }
+
+    public boolean isBlocked() {
+	return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+	this.blocked = blocked;
+    }
+
+    public long getId() {
+	return id;
+    }
+
+    public void setId(long id) {
+	this.id = id;
     }
 
     public LicenseEntity(String code) {

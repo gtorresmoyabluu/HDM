@@ -10,7 +10,6 @@ import com.bluu.hdm.rest.dao.interfaces.IRoleDAO;
 import com.bluu.hdm.rest.entity.AccessEntity;
 import com.bluu.hdm.rest.entity.RoleEntity;
 import com.bluu.hdm.rest.vo.AccessVO;
-import com.bluu.hdm.rest.vo.RoleVO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -64,15 +63,15 @@ public class AccessService {
 	}
 
 	AccessEntity entity = mapper.convertValue(accessRequest, AccessEntity.class);
-	for (RoleVO rol : accessRequest.getRoleEntitySet()) {
-	    RoleEntity role = mapper.convertValue(rol, RoleEntity.class);
-	    entity.setRoleEntitySet(new HashSet<RoleEntity>() {
-		{
-		    add(role);
-		}
+	if (accessRequest.getRoleEntitySet() != null) {
+	    accessRequest.getRoleEntitySet().stream().map((rol) -> mapper.convertValue(rol, RoleEntity.class)).forEachOrdered((role) -> {
+		entity.setRoleEntitySet(new HashSet<RoleEntity>() {
+		    {
+			add(role);
+		    }
+		});
 	    });
 	}
-
 	accessService.save(entity);
 
 	HttpHeaders headers = new HttpHeaders();
@@ -87,7 +86,7 @@ public class AccessService {
      * @return
      */
     @RequestMapping(value = "/upd", method = RequestMethod.PUT)
-    public ResponseEntity<AccessVO> updateUser(@RequestBody AccessVO accessRequest) {
+    public ResponseEntity<AccessVO> update(@RequestBody AccessVO accessRequest) {
 	if (accessRequest.getId() != null) {
 	    if (!accessService.isExist(accessRequest.getId())) {
 		logger.error("Access with id " + accessRequest.getId() + " not found");
@@ -106,18 +105,38 @@ public class AccessService {
      *
      * @return
      */
-    @RequestMapping(value = "/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<AccessVO>> getAll() {
+    @RequestMapping(value = "/all/parent", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<AccessVO>> getAllParents() {
 	List<AccessVO> response = new ArrayList<>();
 	try {
-	    List<AccessEntity> source = accessService.findAll();
+	    List<AccessEntity> source = accessService.getParents();
 	    if (source.isEmpty()) {
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);// You many decide to return
 		// HttpStatus.NOT_FOUND
 	    } else {
-		for (AccessEntity roleEntity : source) {
-		    response.add(mapper.convertValue(roleEntity, AccessVO.class));
-		}
+		source.forEach((accessEntity) -> {
+		    response.add(mapper.convertValue(accessEntity, AccessVO.class));
+		});
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	    }
+	} catch (IllegalArgumentException ex) {
+	    logger.error(String.format("Error: %s", ex.getMessage()));
+	}
+	return new ResponseEntity<>(HttpStatus.NO_CONTENT);// You many decide to return HttpStatus.NOT_FOUND
+    }
+
+    @RequestMapping(value = "/all/parent/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<AccessVO>> getAllChilds(@PathVariable(value = "id") long id) {
+	List<AccessVO> response = new ArrayList<>();
+	try {
+	    List<AccessEntity> source = accessService.getChildsParent(id);
+	    if (source.isEmpty()) {
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);// You many decide to return
+		// HttpStatus.NOT_FOUND
+	    } else {
+		source.forEach((accessEntity) -> {
+		    response.add(mapper.convertValue(accessEntity, AccessVO.class));
+		});
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	    }
 	} catch (IllegalArgumentException ex) {
@@ -179,5 +198,20 @@ public class AccessService {
 	logger.info("Deleting All Access");
 	accessService.deleteAll();
 	return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(value = "/getAccessName/{code}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<AccessVO> findBycode(@PathVariable(value = "code") String code) {
+	try {
+	    AccessEntity source = accessService.findBycode(code);
+	    if (source != null) {
+		return new ResponseEntity<>(mapper.convertValue(source, AccessVO.class), HttpStatus.OK);
+	    } else {
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	    }
+	} catch (IllegalArgumentException ex) {
+	    logger.error(String.format("Error: %s", ex.getMessage()));
+	}
+	return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

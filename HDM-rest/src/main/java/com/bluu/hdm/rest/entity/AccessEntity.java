@@ -32,6 +32,23 @@ import javax.validation.constraints.Size;
 
 @NamedStoredProcedureQueries({
     @NamedStoredProcedureQuery(
+	    name = "getParents",
+	    procedureName = "getParents",
+	    resultClasses = {AccessEntity.class}
+    )
+    ,
+    @NamedStoredProcedureQuery(
+	    name = "getChildsParent",
+	    procedureName = "getChildsParent",
+	    resultClasses = {AccessEntity.class},
+	    parameters = {
+		@StoredProcedureParameter(
+			name = "pIdParent",
+			type = Long.class,
+			mode = ParameterMode.IN)
+	    })
+    ,
+    @NamedStoredProcedureQuery(
 	    name = "getAccessByRolId",
 	    procedureName = "getAccessByRolId",
 	    resultClasses = {AccessEntity.class},

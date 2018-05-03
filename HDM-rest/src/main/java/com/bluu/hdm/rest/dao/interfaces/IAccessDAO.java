@@ -34,4 +34,12 @@ public interface IAccessDAO extends IGenericDAO<AccessEntity, Long> {
 
     @Procedure("AccessEntity.setAccessToRol")
     void setAccessToRol(Long id_role, Long child, Long parent);
+
+    @Procedure("AccessEntity.getParents")
+    List<AccessEntity> getParents();
+
+    @Procedure("AccessEntity.getChildsParent")
+    List<AccessEntity> getChildsParent(Long idParent);
+
+    AccessEntity findBycode(String code);
 }

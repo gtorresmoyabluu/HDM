@@ -1,16 +1,257 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <title>TODO supply a title</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    </head>
-    <body>
-        <div>TODO write content</div>
-    </body>
-</html>
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    template="/WEB-INF/layout/template.xhtml">
+    <ui:define name="topbuttonbar">
+        <p:remoteCommand name="doRefresh" action="#{access.doRefresh}" update=":card" />
+        <p:remoteCommand name="fixSearch" action="#{access.doSecondStepFixSearch()}" update=":form_dt:dataTable"/>
+        <li>
+	    <a href="#" onclick="doRefresh();" onfocus="blur();">
+		<i title="#{sessionScope.button_refresh}" class="topbar-icon material-icons">autorenew</i>
+		<span class="topbar-item-name">#{sessionScope.button_refresh}</span>
+            </a>
+	</li>
+    </ui:define>
+    <ui:define name="content">
+        <div class="ui-g">
+            <div class="ui-g-12">
+                <h:panelGroup id="card" layout="block" styleClass="card">
+		    <!-- Buttons -->
+		    <p:outputPanel id="buttonPanel">
+                        <h:form id="form_bt">
+                            <div style="float: left" class="webTitles">
+                                <h1>
+                                    <h:outputText value="#{sessionScope.access_title}" rendered="#{access.viewType.name == 'list'}" />
+                                    <h:outputText value="#{sessionScope.access_title_detail}" rendered="#{access.viewType.name == 'detail'}" />
+                                    <h:outputText value="#{sessionScope.access_title_edit}" rendered="#{access.viewType.name == 'edit'}" />
+                                    <h:outputText value="#{sessionScope.access_title_add}" rendered="#{access.viewType.name == 'add'}" />
+                                </h1>
+                            </div>
+                            <div align="right">
+                                <p:commandButton icon="ui-icon-playlist-add"
+                                                 styleClass="#{access.viewType.name == 'add' ? 'active' : ''}"
+                                                 title="#{sessionScope.access_title_add}" update=":card" action="#{access.doChangeAdd}"
+                                                 immediate="true" />
+                                <p:spacer width="10" />
+                                <p:commandButton id="toggler" type="button" style="float:right" icon="ui-icon-grid-on"
+                                                 title="#{sessionScope.button_togglercolumns}" styleClass="showOnDesktop" />
+                                <p:columnToggler datasource=":form_dt:dataTable" trigger="toggler">
+                                    <p:ajax event="toggle" listener="#{access.doOnColumnToggle}" />
+                                </p:columnToggler>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+		    <!-- Detail Access -->
+                    <p:outputPanel rendered="#{access.viewType.name == 'detail'}">
+                        <p:focus/>
+                        <p:spacer height="10" />
+                        <p:panelGrid columns="4" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid compact">
+                            <h:outputLabel for="codeDetail" value="#{sessionScope.access_code}:" styleClass="itemLabel" />
+                            <h:outputText id="codeDetail" value="#{access.currentItem.code}" />
+
+			    <p:selectOneMenu id="parentDetail"
+					     value="#{access.currentItem.idParent}"
+					     converter="pojoConverter"
+					     styleClass="#{access.currentItem.idParent == null ? 'noSelectionItem' : ''}"
+					     disabled="disabled">
+				<f:selectItem itemLabel="#{sessionScope.access_parent}" itemValue="" noSelectionOption="true" />
+				<f:selectItems value="#{access.availableParents}" var="acc" itemLabel="#{acc.description}" itemValue="#{acc}"/>
+			    </p:selectOneMenu>
+
+                            <h:outputLabel for="descriptionDetail" value="#{sessionScope.access_description}:" styleClass="itemLabel" />
+                            <h:outputText id="descriptionDetail" value="#{access.currentItem.description}" />
+
+                            <h:outputLabel for="iconDetail" value="#{sessionScope.access_icon}:" styleClass="itemLabel" />
+                            <h:outputText id="iconDetail" value="#{access.currentItem.icon}" />
+                        </p:panelGrid>
+                        <p:spacer height="10" />
+                        <div align="right">
+                            <p:blockUI block="processCancelDetail" trigger="processCancelDetail" />
+                            <p:commandButton id="processCancelDetail" value="#{sessionScope.button_cancel}" update=":card"
+                                             action="#{access.doSetViewTypeList}" styleClass="ui-priority-primary" style="margin-bottom:10px"
+                                             oncomplete="PF('table').unselectAllRows()" />
+                        </div>
+                    </p:outputPanel>
+		    <!-- Add Access -->
+                    <p:outputPanel rendered="#{access.viewType.name == 'add'}">
+                        <h:form id="form_at">
+                            <p:spacer height="10" />
+                            <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                                <h:panelGroup styleClass="md-inputfield ">
+                                    <p:inputText id="codeAdd" label="#{sessionScope.access_code}"
+                                                 value="#{access.currentItem.code}" required="true"
+                                                 requiredMessage="#{sessionScope.access_code_required}" validator="notEmptyValidator"
+                                                 validatorMessage="#{sessionScope.access_code_required}" maxlength="64" />
+                                    <label>#{sessionScope.access_code}</label>
+                                </h:panelGroup>
+
+                                <p:selectOneMenu id="parentAdd"
+						 value="#{access.currentItem.idParent}"
+						 converter="pojoConverter"
+                                                 styleClass="#{access.currentItem.idParent == null ? 'noSelectionItem' : ''}">
+                                    <f:selectItem itemLabel="#{sessionScope.access_parent}" itemValue="#{null}" noSelectionOption="true" />
+                                    <f:selectItems value="#{access.availableParents}" var="acc" itemLabel="#{acc.description}" itemValue="#{acc}"/>
+                                    <p:ajax event="change" update="@this"/>
+                                </p:selectOneMenu>
+
+                                <h:panelGroup styleClass="md-inputfield ">
+                                    <p:inputText id="descriptionAdd" label="#{sessionScope.access_description}"
+                                                 value="#{access.currentItem.description}" required="true"
+                                                 requiredMessage="#{sessionScope.access_description_required}" validator="notEmptyValidator"
+                                                 validatorMessage="#{sessionScope.access_description_required}" maxlength="64" />
+                                    <label>#{sessionScope.access_description}</label>
+                                </h:panelGroup>
+
+                                <h:panelGroup styleClass="md-inputfield ">
+                                    <p:inputText id="iconAdd" label="#{sessionScope.access_icon}"
+                                                 value="#{access.currentItem.icon}" required="false"/>
+                                    <label>#{sessionScope.access_icon}</label>
+                                </h:panelGroup>
+                            </p:panelGrid>
+                            <p:spacer height="10" />
+                            <div align="right">
+                                <p:blockUI block="processAdd" trigger="processAdd" />
+                                <p:blockUI block="processCancelAdd" trigger="processCancelAdd" />
+                                <p:commandButton id="processAdd" value="#{sessionScope.button_save}" update=":card"
+                                                 action="#{access.doAdd}" styleClass="ui-priority-primary" style="margin-bottom:10px" />
+                                <p:spacer width="5" />
+                                <p:commandButton id="processCancelAdd" value="#{sessionScope.button_cancel}"
+                                                 action="#{access.doSetViewTypeList}" immediate="true" update=":card" process="@this"
+                                                 styleClass="ui-priority-primary" style="margin-bottom:10px">
+                                    <p:resetInput target="@form" />
+                                </p:commandButton>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+		    <!-- Edit Access -->
+                    <p:outputPanel rendered="#{access.viewType.name == 'edit'}">
+                        <h:form id="form_et">
+                            <p:spacer height="10" />
+                            <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                                <h:panelGroup styleClass="md-inputfield ">
+                                    <p:inputText id="codeEdit" label="#{sessionScope.access_code}"
+                                                 value="#{access.currentItem.code}" required="true"
+                                                 requiredMessage="#{sessionScope.access_code_required}" validator="notEmptyValidator"
+                                                 validatorMessage="#{sessionScope.access_code_required}" maxlength="64" />
+                                    <label>#{sessionScope.access_code}</label>
+                                </h:panelGroup>
+
+                                <p:selectOneMenu id="parentEdit"
+						 value="#{access.currentItem.idParent}"
+						 converter="pojoConverter"
+                                                 styleClass="#{access.currentItem.idParent == null ? 'noSelectionItem' : ''}">
+                                    <f:selectItem itemLabel="#{sessionScope.access_parent}" itemValue="#{null}" noSelectionOption="true" />
+                                    <f:selectItems value="#{access.availableParents}" var="acc" itemLabel="#{acc.description}" itemValue="#{acc}"/>
+                                    <p:ajax event="change" update="@this"/>
+                                </p:selectOneMenu>
+
+                                <h:panelGroup styleClass="md-inputfield ">
+                                    <p:inputText id="descriptionEdit" label="#{sessionScope.access_description}"
+                                                 value="#{access.currentItem.description}" required="true"
+                                                 requiredMessage="#{sessionScope.access_description_required}" validator="notEmptyValidator"
+                                                 validatorMessage="#{sessionScope.access_description_required}" maxlength="64" />
+                                    <label>#{sessionScope.access_description}</label>
+                                </h:panelGroup>
+
+                                <h:panelGroup styleClass="md-inputfield ">
+                                    <p:inputText id="iconEdit" label="#{sessionScope.access_icon}"
+                                                 value="#{access.currentItem.icon}" required="false"/>
+                                    <label>#{sessionScope.access_icon}</label>
+                                </h:panelGroup>
+                            </p:panelGrid>
+
+                            <p:spacer height="10" />
+
+                            <div align="right">
+                                <p:blockUI block="processEdit" trigger="processEdit" />
+                                <p:blockUI block="processCancelEdit" trigger="processCancelEdit" />
+
+                                <p:commandButton id="processEdit" value="#{sessionScope.button_save}" action="#{access.doEdit}"
+                                                 update=":card" styleClass="ui-priority-primary" style="margin-bottom:10px" />
+                                <p:spacer width="5" />
+
+                                <p:commandButton id="processCancelEdit" value="#{sessionScope.button_cancel}"
+                                                 action="#{access.doSetViewTypeList}" immediate="true" update=":card" process="@this"
+                                                 styleClass="ui-priority-primary" style="margin-bottom:10px">
+                                    <p:resetInput target="@form" />
+                                </p:commandButton>
+
+                            </div>
+
+                        </h:form>
+
+                    </p:outputPanel>
+                    <p:spacer height="10" />
+		    <!-- Table Access -->
+                    <p:outputPanel>
+                        <h:form id="form_dt">
+			    <p:treeTable
+				id="dataTable"
+				value="#{access.root}"
+				var="item"
+				selectionMode="single"
+				selection="#{access.selectedNode}"
+				style="margin-top:0"
+				widgetVar="table"
+				>
+				<f:facet name="header">
+				    #{sessionScope.access_table_title}
+				</f:facet>
+				<p:column
+				    visible="#{access.toggleableColumns[0]}"
+				    exportable="#{access.toggleableColumns[0]}"
+				    headerText="#{sessionScope.access_table_description}">
+				    <h:outputText value="#{item.description}" />
+				</p:column>
+				<p:column
+				    visible="#{access.toggleableColumns[1]}"
+				    exportable="#{access.toggleableColumns[1]}"
+				    headerText="#{sessionScope.access_table_code}">
+				    <h:outputText value="#{item.code}" />
+				</p:column>
+				<p:column
+				    visible="#{access.toggleableColumns[2]}"
+				    exportable="#{access.toggleableColumns[2]}"
+				    headerText="#{sessionScope.access_table_icon}">
+				    <i class="material-icons"><h:outputText value="#{item.icon}" /></i> <h:outputText value="#{item.icon}" />
+				</p:column>
+				<p:column
+				    visible="#{access.toggleableColumns[3]}"
+				    exportable="#{access.toggleableColumns[3]}"
+				    headerText="#{sessionScope.access_table_parent}">
+				    <h:outputText value="#{item.parentName}" />
+				</p:column>
+				<p:column style="width:73px;" exportable="false" toggleable="false" >
+				    <p:column exportable="false" toggleable="false" width="73px;" >
+					<p:commandButton icon="ui-icon ui-icon-edit"
+							 update=":card" title="#{sessionScope.button_edit}" action="#{access.doChangeEdit}"
+							 immediate="true" oncomplete="window.scrollTo(0,0);">
+					    <f:setPropertyActionListener value="#{item}" target="#{access.currentItem}" />
+					</p:commandButton>
+					<p:spacer width="5" />
+					<p:commandButton icon="ui-icon ui-icon-trash" title="#{sessionScope.button_delete}"
+							 oncomplete="PF('confirmDelete').show();" actionListener="#{access.setCurrentItem(item)}"
+							 immediate="true"/>
+				    </p:column>
+				</p:column>
+			    </p:treeTable>
+                        </h:form>
+                    </p:outputPanel>
+                    <p:confirmDialog id="confirmDialog" message="#{sessionScope.disclaimer_delete}"
+                                     header="#{sessionScope.header_warning}" severity="alert" widgetVar="confirmDelete">
+                        <p:blockUI block="delete" trigger="delete" />
+                        <p:blockUI block="cancelDelete" trigger="delete" />
+
+                        <p:commandButton id="delete" value="#{sessionScope.button_accept}" action="#{access.doDelete}"
+                                         update=":form_dt:dataTable" oncomplete="PF('confirmDelete').hide();" />
+                        <p:commandButton value="#{sessionScope.button_cancel}" id="cancelDelete"
+                                         onclick="PF('confirmDelete').hide();" type="button" />
+                    </p:confirmDialog>
+                </h:panelGroup>
+            </div>
+        </div>
+    </ui:define>
+</ui:composition>

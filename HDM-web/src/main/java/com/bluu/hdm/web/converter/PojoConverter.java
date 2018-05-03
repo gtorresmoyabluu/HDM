@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.bean.RequestScoped;
@@ -38,7 +39,7 @@ public class PojoConverter implements Converter {
 
     @Override
     public String getAsString(FacesContext ctx, UIComponent component, Object obj) {
-	if (obj != null && !"".equals(obj)) {
+	if (obj != null && !"".equals(obj) && !(obj instanceof ArrayList)) {
 	    String id;
 	    try {
 		if ((obj.getClass().getMethod("getId")) != null) {

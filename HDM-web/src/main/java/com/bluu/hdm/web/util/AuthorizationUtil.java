@@ -1,10 +1,16 @@
 package com.bluu.hdm.web.util;
 
+import com.bluu.hdm.web.pojo.Message;
 import com.bluu.hdm.web.pojo.User;
 import com.bluu.hdm.web.pojo.UserSession;
+import com.bluu.hdm.web.rest.IConsumeREST;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.core.MultivaluedMap;
 
 public abstract class AuthorizationUtil {
 
@@ -96,5 +102,22 @@ public abstract class AuthorizationUtil {
      */
     public static void doLogin(FacesContext facesContext, UserSession user) {
 	((HttpSession) facesContext.getExternalContext().getSession(false)).setAttribute(USER_FACES_SESSION, user);
+    }
+
+    public static void doRefreshAll(ObjectMapper mapper, IConsumeREST apiRest, MultivaluedMap params) {
+	String locate = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
+	List<Message> messages = mapper.convertValue(
+		apiRest.getListRestAPI(String.format("messages/messages/%s", locate), params),
+		new TypeReference<List<Message>>() {
+	}
+	);
+	if (!messages.isEmpty()) {
+	    messages.forEach((m) -> {
+		if (FacesContext.getCurrentInstance().getExternalContext().getSessionMap().containsKey(m.getCode())) {
+		    FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put(m.getCode(), null);
+		}
+		FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put(m.getCode(), m.getDescription());
+	    });
+	}
     }
 }

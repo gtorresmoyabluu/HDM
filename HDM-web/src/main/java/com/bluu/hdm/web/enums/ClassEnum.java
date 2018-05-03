@@ -6,6 +6,8 @@
 package com.bluu.hdm.web.enums;
 
 import com.bluu.hdm.web.pojo.Access;
+import com.bluu.hdm.web.pojo.Category;
+import com.bluu.hdm.web.pojo.Configuration;
 import com.bluu.hdm.web.pojo.Role;
 import com.bluu.hdm.web.pojo.User;
 
@@ -16,7 +18,9 @@ import com.bluu.hdm.web.pojo.User;
 public enum ClassEnum {
     Access(Access.class),
     Role(Role.class),
-    User(User.class);
+    User(User.class),
+    Category(Category.class),
+    Configuration(Configuration.class);
 
     Class<?> clazz;
 

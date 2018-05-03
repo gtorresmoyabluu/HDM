@@ -1,5 +1,6 @@
 package com.bluu.hdm.web.face;
 
+import com.bluu.hdm.web.pojo.License;
 import com.bluu.hdm.web.pojo.User;
 import com.bluu.hdm.web.pojo.UserSession;
 import com.bluu.hdm.web.util.AuthorizationUtil;
@@ -41,6 +42,10 @@ public class SessionFace implements Serializable {
 
     public String getAppTimestamp() {
 	return "1.0.0";
+    }
+
+    public License getLicense() {
+	return new License();
     }
 
     public Boolean getIsUserLogged() {

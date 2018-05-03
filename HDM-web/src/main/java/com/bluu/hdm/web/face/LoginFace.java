@@ -82,16 +82,7 @@ public class LoginFace implements Serializable {
 		    try {
 			//Obtiene los mensajes desde la BBDD dependiendo del idioma (locale)
 			String locate = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
-			List<Message> messages = mapper.convertValue(
-				apiRest.getListRestAPI(String.format("messages/messages/%s", locate), params),
-				new TypeReference<List<Message>>() {
-			}
-			);
-			if (!messages.isEmpty()) {
-			    messages.forEach((m) -> {
-				FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put(m.getCode(), m.getDescription());
-			    });
-			}
+			AuthorizationUtil.doRefreshAll(mapper, apiRest, params);
 		    } catch (IllegalArgumentException ex) {
 
 		    }

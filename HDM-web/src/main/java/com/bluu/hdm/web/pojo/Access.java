@@ -5,6 +5,7 @@
  */
 package com.bluu.hdm.web.pojo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,13 +19,30 @@ public class Access {
     private String code;
     private Long parent;
     private String icon;
+    private String parentName;
     private Boolean active;
     private Long idRole;
 
+    private Access idParent;
+
+    private List<Access> parents;
     private List<Access> child;
     private List<Role> roles;
 
     public Access() {
+	this.parents = new ArrayList<>();
+	this.child = new ArrayList<>();
+	this.roles = new ArrayList<>();
+    }
+
+    public Access(Long id, String description, String code, String icon, String parentName, Long parentId, Access p) {
+	this.id = id;
+	this.description = description;
+	this.code = code;
+	this.icon = icon;
+	this.parentName = parentName;
+	this.parent = parentId;
+	this.idParent = p;
     }
 
     public Access(String description, Boolean active) {
@@ -40,6 +58,14 @@ public class Access {
 	this.icon = acc.getIcon();
 	this.active = acc.getActive();
 	this.child = acc.getChild();
+    }
+
+    public String getParentName() {
+	return parentName;
+    }
+
+    public void setParentName(String parentName) {
+	this.parentName = parentName;
     }
 
     public String getIcon() {
@@ -112,6 +138,22 @@ public class Access {
 
     public void setIdRole(Long idRole) {
 	this.idRole = idRole;
+    }
+
+    public List<Access> getParents() {
+	return parents;
+    }
+
+    public void setParents(List<Access> parents) {
+	this.parents = parents;
+    }
+
+    public Access getIdParent() {
+	return idParent;
+    }
+
+    public void setIdParent(Access idParent) {
+	this.idParent = idParent;
     }
 
     @Override

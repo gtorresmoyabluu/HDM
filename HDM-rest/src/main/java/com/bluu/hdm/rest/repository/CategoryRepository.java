@@ -5,8 +5,7 @@
  */
 package com.bluu.hdm.rest.repository;
 
-import com.bluu.hdm.rest.entity.AccessEntity;
-import java.util.Optional;
+import com.bluu.hdm.rest.entity.CategoryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,8 +13,7 @@ import org.springframework.stereotype.Repository;
  *
  * @author Gonzalo Torres
  */
-@Repository("accessRepository")
-public interface AccessRepository extends JpaRepository<AccessEntity, Long> {
+@Repository("categoryRepository")
+public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
 
-    Optional<AccessEntity> findBycode(String code);
 }
