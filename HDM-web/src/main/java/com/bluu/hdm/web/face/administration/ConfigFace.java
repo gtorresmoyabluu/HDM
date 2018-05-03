@@ -154,7 +154,7 @@ public class ConfigFace implements Serializable {
 
     public void doRefresh() {
 	categories = null;
-	running = true;
+	running = false;
 	AuthorizationUtil.doRefreshAll(mapper, apiRest, params);
     }
 
