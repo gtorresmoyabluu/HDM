@@ -1,5 +1,6 @@
 package com.bluu.hdm.web.pojo;
 
+import com.bluu.hdm.web.pojo.administracion.User;
 import java.io.Serializable;
 import java.util.Set;
 

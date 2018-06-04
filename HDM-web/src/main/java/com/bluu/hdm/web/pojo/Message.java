@@ -16,6 +16,16 @@ public class Message {
     private String code;
     private String description;
 
+    public Message() {
+    }
+
+    public Message(Message msg) {
+        this.id = msg.getId();
+        this.locale = msg.getLocale();
+        this.code = msg.getCode();
+        this.description = msg.getDescription();
+    }
+
     public Long getId() {
 	return id;
     }

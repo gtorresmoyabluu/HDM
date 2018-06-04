@@ -5,6 +5,7 @@
  */
 package com.bluu.hdm.rest.dao.implement;
 
+import com.bluu.hdm.rest.dao.implement.inventory.ModelDAOImpl;
 import com.bluu.hdm.rest.dao.interfaces.IMessageDAO;
 import com.bluu.hdm.rest.entity.MessageEntity;
 import com.bluu.hdm.rest.repository.MessageRepository;

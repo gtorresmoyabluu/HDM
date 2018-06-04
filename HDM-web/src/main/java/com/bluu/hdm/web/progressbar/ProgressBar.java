@@ -4,7 +4,11 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
+import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;
+import javax.faces.context.FacesContext;
 
+@ManagedBean(name="progressBean")
 public class ProgressBar implements Serializable{
 
     public static Integer MAX_PROGRESS = 99;
@@ -43,6 +47,9 @@ public class ProgressBar implements Serializable{
 
     // Lock
     private final transient Object lock = new Object();
+
+    public ProgressBar() {
+    }
 
     public ProgressBar(ProgressBarListener listener, int maxTime, int expectedTime, int expectedProgress) {
         this.id = UUID.randomUUID().toString();
@@ -289,6 +296,10 @@ public class ProgressBar implements Serializable{
                 thread.start();
             }
         }
+    }
+    
+    public void onComplete() {
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Progress Completed"));
     }
 
 }

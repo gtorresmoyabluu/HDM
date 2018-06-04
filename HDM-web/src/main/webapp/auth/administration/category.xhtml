@@ -1,0 +1,170 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    template="/WEB-INF/layout/template.xhtml">
+    <ui:define name="topbuttonbar">
+        <p:remoteCommand name="doRefresh" action="#{category.doRefresh}" update=":card" />
+        <li>
+            <a href="#" onclick="doRefresh();" onfocus="blur();">
+                <i title="#{sessionScope.button_refresh}" class="topbar-icon material-icons">autorenew</i>
+                <span class="topbar-item-name">#{sessionScope.button_refresh}</span>
+            </a>
+        </li>
+    </ui:define>
+    <ui:define name="content">
+        <h:outputStylesheet name="css/configuration.css" library="bluu" />
+        <div class="ui-g ui-fluid">
+            <div class="ui-g-12">
+                <h:panelGroup id="card" layout="block" styleClass="card">
+                    <!-- Buttons -->
+                    <p:outputPanel id="buttonPanel">
+                        <h:form id="form_bt">
+                            <div style="float: left" class="webTitles">
+                                <h1>
+                                    <h:outputText value="#{sessionScope.category_title}" rendered="#{category.viewType.name == 'list'}" />
+                                    <h:outputText value="#{sessionScope.category_title_detail}" rendered="#{category.viewType.name == 'detail'}" />
+                                    <h:outputText value="#{sessionScope.category_title_edit}" rendered="#{category.viewType.name == 'edit'}" />
+                                    <h:outputText value="#{sessionScope.category_title_add}" rendered="#{category.viewType.name == 'add'}" />
+                                    <h:outputText value="#{sessionScope.category_title_config}" rendered="#{category.viewType.name == 'config'}" />
+                                </h1>
+                            </div>
+                            <div align="right">
+                                <p:commandButton icon="ui-icon-playlist-add"
+                                                 styleClass="#{category.viewType.name == 'add' ? 'active' : ''}"
+                                                 title="#{sessionScope.roles_title_add}" update=":card" action="#{category.doChangeAdd}"
+                                                 immediate="true" />
+                                <p:spacer width="10" />
+                                <p:commandButton id="dynaButton" icon="ui-icon-file-download" title="#{button_export}" />
+                                <p:menu overlay="true" trigger="dynaButton" my="left top" at="left bottom">
+                                    <p:menuitem value="#{sessionScope.table_export_all}" action="#{category.doExport}" ajax="false">
+                                        <f:setPropertyActionListener value="false" target="#{category.exportPageOnly}" />
+                                        <f:setPropertyActionListener value="csv" target="#{category.exportFormat}" />
+                                    </p:menuitem>
+                                    <p:menuitem value="#{sessionScope.table_export_current}" action="#{category.doExport}" ajax="false">
+                                        <f:setPropertyActionListener value="true" target="#{category.exportPageOnly}" />
+                                        <f:setPropertyActionListener value="csv" target="#{category.exportFormat}" />
+                                    </p:menuitem>
+                                </p:menu>
+                                <p:spacer width="10" />
+                                <p:commandButton id="toggler" type="button" style="float:right" icon="ui-icon-grid-on"
+                                                 title="#{sessionScope.button_togglercolumns}" styleClass="showOnDesktop" />
+                                <p:columnToggler datasource=":form_dt:dataTable" trigger="toggler">
+                                    <p:ajax event="toggle" listener="#{category.doOnColumnToggle}" />
+                                </p:columnToggler>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+                </h:panelGroup>
+
+                <p:spacer height="10" />
+                <!-- Table Roles -->
+                <p:outputPanel id="tables">
+                    <h:form id="form_dt">
+                        <p:dataTable
+                            rendered="#{category.showtable}"
+                            id="dataTable"
+                            rowKey="#{item.id}"
+                            var="item"
+                            editable="false"
+                            lazy="true"
+                            widgetVar="table"
+                            reflow="true"
+                            emptyMessage="#{sessionScope.table_empty}"
+                            value="#{category.items}"
+                            selection="#{category.currentItem}"
+                            selectionMode="single"
+                            rowHover="true"
+                            paginator="true"
+                            rows="10"
+                            paginatorPosition="bottom"
+                            currentPageReportTemplate="(#{sessionScope.table_records}: {startRecord} - {endRecord} #{sessionScope.table_of} {totalRecords}, #{sessionScope.table_page} {currentPage} #{sessionScope.table_of} {totalPages})"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15,20,50">
+
+                            <f:facet name="header">
+                                <h:outputText value="#{sessionScope.roles_table_title}" />
+                            </f:facet>
+
+                            <p:ajax event="rowSelect" listener="#{category.doChangeDetail}" oncomplete="window.scrollTo(0,0);" update=":card" />
+                            <p:ajax event="rowUnselect" listener="#{category.doSetViewTypeList}" update=":card" />
+                            <!--cabecera-->
+                            <p:column
+                                sortBy="#{item.name}"
+                                visible="#{category.toggleableColumns[0]}"
+                                exportable="#{category.toggleableColumns[0]}"
+                                filterBy="#{item.name}"
+                                filterMatchMode="contains"
+                                headerText="#{sessionScope.roles_table_name}">
+                                <h:outputText value="#{item.name}"/>
+                            </p:column>
+
+                            <p:column
+                                sortBy="#{item.icon}"
+                                visible="#{category.toggleableColumns[1]}"
+                                exportable="#{category.toggleableColumns[1]}"
+                                filterBy="#{item.icon}"
+                                filterMatchMode="contains"
+                                headerText="#{sessionScope.roles_table_name}">
+                                <h:outputText value="#{item.icon}"/>
+                            </p:column>
+
+                            <p:column>
+                                <h:panelGroup layout="block" style="text-align: center">
+                                    <p:selectBooleanCheckbox styleClass="checkboxPermission" value="#{item.showServer}">
+                                        <p:ajax update="@this" listener="#{category.doCheckboxClick(category.currentItem.id)}" process="@this" />
+                                    </p:selectBooleanCheckbox>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column
+                                sortBy="#{item.showServer}"
+                                visible="#{category.toggleableColumns[2]}"
+                                exportable="#{category.toggleableColumns[2]}"
+                                filterBy="#{item.showServer}"
+                                filterMatchMode="contains"
+                                headerText="#{sessionScope.roles_table_name}">
+                                <h:outputText value="#{item.showServer}"/>
+                            </p:column>
+
+                            <p:column exportable="false" toggleable="false" width="113px;" >
+
+                                <p:commandButton icon="ui-icon ui-icon-edit"
+                                                 styleClass="#{category.currentItem.id == item.id and category.viewType.name == 'edit' ? 'active' : ''}"
+                                                 update=":card" title="#{sessionScope.button_edit}" action="#{category.doChangeEdit}"
+                                                 immediate="true" oncomplete="PF('table').unselectAllRows(); window.scrollTo(0,0);">
+                                    <f:setPropertyActionListener value="#{item}" target="#{category.currentItem}" />
+                                </p:commandButton>
+                                <p:spacer width="5" />
+                                <p:commandButton icon="ui-icon ui-icon-vpn-key"
+                                                 styleClass="#{category.currentItem.id == item.id and category.viewType.name == 'config' ? 'active' : ''}"
+                                                 update="tables,:card" title="#{sessionScope.button_access}" action="#{category.doChangeAccess}"
+                                                 immediate="true" onclick="PF('tableAccess').show();PF('table').hide();" oncomplete="PF('table').unselectAllRows();window.scrollTo(0,0);">
+                                    <f:setPropertyActionListener value="#{item}" target="#{category.currentItem}" />
+                                </p:commandButton>
+                                <p:spacer width="5" />
+                                <p:commandButton icon="ui-icon ui-icon-trash" title="#{sessionScope.button_delete}"
+                                                 oncomplete="PF('confirmDelete').show();" actionListener="#{category.setCurrentItem(item)}"
+                                                 immediate="true" disabled="#{item.id == sessionFace.userLogged.idRole.id}" />
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:form>
+                </p:outputPanel>
+
+                <p:confirmDialog id="confirmDialog" message="#{sessionScope.roles_delete_disclaim}"
+                                 header="#{sessionScope.roles_delete_deleteroles}" severity="alert" widgetVar="confirmDelete">
+                    <p:blockUI block="delete" trigger="delete" />
+                    <p:blockUI block="cancelDelete" trigger="delete" />
+
+                    <p:commandButton id="delete" value="#{sessionScope.button_accept}" action="#{category.doDelete}"
+                                     update=":form_dt:dataTable" oncomplete="PF('confirmDelete').hide();" />
+                    <p:commandButton value="#{sessionScope.button_cancel}" id="cancelDelete"
+                                     onclick="PF('confirmDelete').hide();" type="button" />
+                </p:confirmDialog>
+            </div>
+        </div>
+    </ui:define>
+</ui:composition>

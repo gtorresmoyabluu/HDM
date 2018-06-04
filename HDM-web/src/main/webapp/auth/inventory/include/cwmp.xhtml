@@ -1,0 +1,267 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html">
+    <style>
+        body .ui-tabs .ui-tabs-nav > li.ui-state-active{
+            background-color: #3e464c;
+        }
+        body .ui-tabs .ui-tabs-nav > li.ui-state-active a {
+            color: #ffffff;
+            background-color: #3e464c;
+        }
+        .ui-tabs.ui-tabs-top>.ui-tabs-nav li {
+            border-top: 0;
+            border-bottom: 0;
+            top:0;
+            bottom: 0;
+            /* top: 1px; */
+        }
+        .tabView .ui-tabs {
+            padding: 0px!important;
+        }
+    </style>
+    <h:form id="form">
+
+        <p:growl id="msgs" showDetail="true" />
+
+        <h3 style="margin-top:0">TR 069</h3>
+        <p:tabView styleClass="tabView" >
+            <p:tab title="GetRPCMethods">
+                <p:outputPanel id="getrpcmet">
+                    <p:blockUI block="getrpcmet" trigger="clRpc" />
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid"
+                                 columnClasses=", alignRight">
+                        <h:outputText value="#{sessionScope.cpe_cwmp_getrpcmet}" />
+
+                        <p:panelGrid columns="1" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                            <p:commandLink id="clRpc" onclick="blur();" style="color: #3e464c !important;" update="@form"
+                                           process="getrpcmet" actionListener="#{cpe.doGetRpcMethods}">
+                                <i class="material-icons">play_arrow</i>
+                            </p:commandLink>
+                        </p:panelGrid>
+                    </p:panelGrid>
+                </p:outputPanel>
+                <p:dataTable id="grmContainer" value="#{cpe.rpcMethods}" var="met" rendered="#{cpe.rpcMethods!=null}"
+                             scrollable="#{empty cpe.rpcMethods ?  false : true}" scrollHeight="250">
+                    <p:column sortBy="#{met}" filterBy="#{met}" filterMatchMode="contains">
+                        <f:facet name="header">
+                            <h:outputText value="#{sessionScope.cpe_cwmp_rpcmet}" />
+                        </f:facet>
+                        <h:outputText value="#{met}" />
+                    </p:column>
+                </p:dataTable>
+            </p:tab>
+            <p:tab title="SetParameterValues">
+                <p:outputPanel id="setparval">
+                    <p:blockUI block="setparval" trigger="clSetParVal" />
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid"
+                                 columnClasses=", alignRight">
+                        <h:outputText value="#{sessionScope.cpe_cwmp_setparval}" />
+
+                        <p:panelGrid columns="3" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid"
+                                     columnClasses="width65, width25, width10">
+
+                            <h:panelGroup styleClass="md-inputfield">
+                                <p:inputText label="#{sessionScope.cpe_cwmp_par}" value="#{cpe.cwmpSetParName}" style="color:#fff"
+                                             required="true" requiredMessage="#{sessionScope.cpe_cwmp_par_required}" validator="notEmptyValidator"
+                                             validatorMessage="#{sessionScope.cpe_cwmp_par_required}" />
+                                <label>#{sessionScope.cpe_cwmp_par}</label>
+                            </h:panelGroup>
+
+                            <h:panelGroup styleClass="md-inputfield">
+                                <p:inputText label="#{sessionScope.cpe_cwmp_val}" value="#{cpe.cwmpSetParValue}" style="color:#fff"
+                                             required="true" requiredMessage="#{sessionScope.cpe_cwmp_val_required}" validator="notEmptyValidator"
+                                             validatorMessage="#{sessionScope.cpe_cwmp_val_required}" />
+                                <label>#{sessionScope.cpe_cwmp_val}</label>
+                            </h:panelGroup>
+
+
+                            <p:commandLink id="clSetParVal" onclick="blur();" style="color: #3e464c !important;" update="@form"
+                                           process="setparval" actionListener="#{cpe.doSetParameterValues}">
+                                <i class="material-icons">play_arrow</i>
+                            </p:commandLink>
+
+
+                        </p:panelGrid>
+                    </p:panelGrid>
+                </p:outputPanel>
+            </p:tab>
+            <p:tab title="GetParameterValues">
+                <p:outputPanel id="getparval">
+                    <p:blockUI block="getparval" trigger="clGetParVal" />
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group" columnClasses=", alignRight">
+                        <h:outputText value="#{sessionScope.cpe_cwmp_getparval}"/>
+                        <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid" columnClasses="width90, width10">
+
+                            <p:inputText value="#{cpe.cwmpGetParValue}" placeholder="#{sessionScope.cpe_cwmp_par}" />
+                            <p:commandLink id="clGetParVal" onclick="blur();" style="color: #3e464c !important;"
+                                           actionListener="#{cpe.doGetParameterValues}" process="getparval" update="@form">
+                                <i class="material-icons">play_arrow</i>
+                            </p:commandLink>
+                        </p:panelGrid>
+                    </p:panelGrid>
+                </p:outputPanel>
+                <p:dataTable value="#{cpe.parameterValues}" var="par" rendered="#{cpe.parameterValues!=null}"
+                             scrollable="#{empty cpe.parameterValues ?  false : true}" scrollHeight="250" emptyMessage="#{sessionScope.table_empty}">
+                    <p:column sortBy="#{par.key}" filterBy="#{par.key}" filterMatchMode="contains">
+                        <f:facet name="header">
+                            <h:outputText value="#{sessionScope.cpe_cwmp_par}" />
+                        </f:facet>
+                        <h:outputText value="#{par.key}" />
+                    </p:column>
+                    <p:column sortBy="#{par.value}" filterBy="#{par.value}" filterMatchMode="contains">
+                        <f:facet name="header">
+                            <h:outputText value="#{sessionScope.cpe_cwmp_val}" />
+                        </f:facet>
+                        <h:outputText value="#{par.value}" />
+                    </p:column>
+                </p:dataTable>
+            </p:tab>
+            <p:tab title="GetParameterNames">
+                <p:outputPanel id="getparnam">
+                    <p:blockUI block="getparnam" trigger="clGetParNames" />
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group" columnClasses=", alignRight">
+                        <h:outputText value="#{sessionScope.cpe.cwmp_getparnam}" />
+
+                        <p:panelGrid columns="3" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid"
+                                     columnClasses="width65, width25, width10">
+
+                            <p:inputText placeholder="#{sessionScope.cpe_cwmp_path}" value="#{cpe.cwmpGetParName}" style="color:#fff" />
+
+                            <p:selectOneMenu value="#{cpe.cwmpGetParNext}" style="color:#fff">
+                                <p:ajax event="change" update="@this" />
+                                <f:selectItem itemLabel="#{sessionScope.cpe_cwmp_next}" itemValue="#{false}" noSelectionOption="true" />
+                                <f:selectItem itemValue="#{true}" itemLabel="true" />
+                                <f:selectItem itemValue="#{false}" itemLabel="false" />
+                            </p:selectOneMenu>
+
+
+                            <p:commandLink id="clGetParNames" onclick="blur();" style="color: #3e464c !important;" process="getparnam"
+                                           actionListener="#{cpe.doGetParameterNames}" update="@form">
+                                <i class="material-icons">play_arrow</i>
+                            </p:commandLink>
+
+
+                        </p:panelGrid>
+                    </p:panelGrid>
+                </p:outputPanel>
+                <p:dataTable value="#{cpe.parameterNames}" var="par" rendered="#{cpe.parameterNames!=null}"
+                             scrollable="#{empty cpe.parameterNames ?  false : true}" scrollHeight="250">
+
+                    <p:column sortBy="#{par.key}" filterBy="#{par.key}" filterMatchMode="contains">
+                        <f:facet name="header">
+                            <h:outputText value="#{sessionScope.cpe_cwmp_par}" />
+                        </f:facet>
+                        <h:outputText value="#{par.key}" />
+                    </p:column>
+                    <p:column sortBy="#{par.value}" style="text-align: center;">
+                        <f:facet name="header">
+                            <h:outputText value="#{sessionScope.cpe_cwmp_rw}" />
+                        </f:facet>
+                        <h:outputText styleClass="ui-icon ui-icon-check" rendered="#{par.value == 1}" />
+                        <h:outputText styleClass="ui-icon ui-icon-close" rendered="#{par.value != 1}" />
+
+                    </p:column>
+                </p:dataTable>
+            </p:tab>
+            <p:tab title="SetParameterAttributes">
+                <h:panelGrid columns="2" cellpadding="10">
+                    <p:graphicImage name="demo/images/godfather/godfather3.jpg" />
+                    <h:outputText value="After a break of more than 15 years, director Francis Ford Coppola and writer Mario Puzo returned to the well for this third and final story of the fictional Corleone crime family. 
+                                  Two decades have passed, and crime kingpin Michael Corleone, now divorced from his wife Kay has nearly succeeded in keeping his promise that his family would one day be completely legitimate." />
+                </h:panelGrid>
+            </p:tab>
+            <p:tab title="GetParameterAttributes">
+                <h:panelGrid columns="2" cellpadding="10">
+                    <p:graphicImage name="demo/images/godfather/godfather3.jpg" />
+                    <h:outputText value="After a break of more than 15 years, director Francis Ford Coppola and writer Mario Puzo returned to the well for this third and final story of the fictional Corleone crime family. 
+                                  Two decades have passed, and crime kingpin Michael Corleone, now divorced from his wife Kay has nearly succeeded in keeping his promise that his family would one day be completely legitimate." />
+                </h:panelGrid>
+            </p:tab>
+            <p:tab title="AddObject">
+                <p:outputPanel id="addobject">
+                    <p:blockUI block="addobject" trigger="clAddObject" />
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid"
+                                 columnClasses=", alignRight">
+                        <h:outputText value="#{sessionScope.cpe_cwmp_addobject}" />
+
+                        <p:panelGrid columns="3" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid"
+                                     columnClasses="width60, width30, width10">
+
+                            <h:panelGroup styleClass="md-inputfield">
+                                <p:inputText label="#{sessionScope.cpe_cwmp_objnam}" value="#{cpe.cwmpObjectName}" style="color:#fff"
+                                             required="true" requiredMessage="#{sessionScope.cpe_cwmp_par_required}" validator="notEmptyValidator"
+                                             validatorMessage="#{sessionScope.cpe_cwmp_par_required}" />
+                                <label>#{sessionScope.cpe_cwmp_objnam}</label>
+                            </h:panelGroup>
+
+                            <h:panelGroup styleClass="md-inputfield">
+                                <p:inputText label="#{sessionScope.cpe_cwmp_parkey}" value="#{cpe.cwmpParameterKey}" style="color:#fff"
+                                             required="true" requiredMessage="#{sessionScope.cpe_cwmp_par_required}" validator="notEmptyValidator"
+                                             validatorMessage="#{sessionScope.cpe_cwmp_par_required}" />
+                                <label>#{sessionScope.cpe_cwmp_parkey}</label>
+                            </h:panelGroup>
+
+
+                            <p:commandLink id="clAddObject" onclick="blur();" style="color: #3e464c !important;" update="@form"
+                                           process="addobject" actionListener="#{cpe.doAddObject}">
+                                <i class="material-icons">play_arrow</i>
+                            </p:commandLink>
+
+
+                        </p:panelGrid>
+                    </p:panelGrid>
+                </p:outputPanel>
+            </p:tab>
+            <p:tab title="DeleteObject">
+                <p:outputPanel id="delobject">
+                    <p:blockUI block="delobject" trigger="clDelObject" />
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid"
+                                 columnClasses=", alignRight">
+                        <h:outputText value="#{sessionScope.cpe_cwmp_delobject}" />
+
+                        <p:panelGrid columns="3" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid"
+                                     columnClasses="width60, width30, width10">
+
+                            <h:panelGroup styleClass="md-inputfield">
+                                <p:inputText label="#{sessionScope.cpe_cwmp_objnam}" value="#{cpe.cwmpObjectName}" style="color:#fff"
+                                             required="true" requiredMessage="#{sessionScope.cpe_cwmp_par_required}" validator="notEmptyValidator"
+                                             validatorMessage="#{sessionScope.cpe_cwmp_par_required}" />
+                                <label>#{sessionScope.cpe_cwmp_objnam}</label>
+                            </h:panelGroup>
+
+                            <h:panelGroup styleClass="md-inputfield">
+                                <p:inputText label="#{sessionScope.cpe_cwmp_parkey}" value="#{cpe.cwmpParameterKey}" style="color:#fff"
+                                             required="true" requiredMessage="#{sessionScope.cpe_cwmp_par_required}" validator="notEmptyValidator"
+                                             validatorMessage="#{sessionScope.cpe_cwmp_par_required}" />
+                                <label>#{sessionScope.cpe_cwmp_parkey}</label>
+                            </h:panelGroup>
+
+                            <p:commandLink id="clDelObject" onclick="blur();" style="color: #3e464c !important;" update="@form"
+                                           process="delobject" actionListener="#{cpe.doDeleteObject}">
+                                <i class="material-icons">play_arrow</i>
+                            </p:commandLink>
+
+
+                        </p:panelGrid>
+                    </p:panelGrid>
+                </p:outputPanel>
+            </p:tab>
+            <p:tab title="Reboot">
+                <p:outputPanel id="reboot">
+                    <p:blockUI block="reboot" trigger="clReboot" />
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid"
+                                 columnClasses=", alignRight">
+                        <h:outputText value="#{sessionScope.button_reboot}" />
+
+                        <p:panelGrid columns="1" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                            <p:commandLink id="clReboot" onclick="blur();" style="color: #3e464c !important;" update="@form"
+                                           process="reboot" actionListener="#{cpe.doReboot}">
+                                <i class="material-icons">play_arrow</i>
+                            </p:commandLink>
+                        </p:panelGrid>
+                    </p:panelGrid>
+                </p:outputPanel>
+            </p:tab>
+        </p:tabView>    
+    </h:form>
+</ui:composition>

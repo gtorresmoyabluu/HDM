@@ -1,14 +1,8 @@
 package com.bluu.hdm.rest;
 
-import com.bluu.hdm.rest.dao.interfaces.IRoleDAO;
-import com.bluu.hdm.rest.dao.interfaces.IUserDAO;
-import com.bluu.hdm.rest.entity.RoleEntity;
-import com.bluu.hdm.rest.entity.UserEntity;
-import com.bluu.hdm.rest.util.Utils;
-import com.bluu.hdm.rest.vo.RoleVO;
-import com.bluu.hdm.rest.vo.UserVO;
+import com.bluu.hdm.rest.dao.interfaces.administration.IRoleDAO;
+import com.bluu.hdm.rest.dao.interfaces.administration.IUserDAO;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Date;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,15 +12,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class RestApplicationTests {
-
-    @Autowired
-    IUserDAO userService;
-
-    @Autowired
-    IRoleDAO roleService;
-
-    @Autowired
-    ObjectMapper mapper;
 
     @Test
     public void contextLoads() {

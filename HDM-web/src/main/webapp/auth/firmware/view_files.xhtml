@@ -1,0 +1,421 @@
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml" 
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui" 
+    xmlns:f="http://java.sun.com/jsf/core" 
+    xmlns:h="http://java.sun.com/jsf/html"
+    template="/WEB-INF/layout/template.xhtml">
+    <ui:define name="topbuttonbar">
+        <h:form id="form_tbb">
+            <p:remoteCommand name="doRefresh" action="#{firmware.doRefresh}" update=":card" />
+        </h:form>
+        <li>
+            <a href="#" onclick="doRefresh();">
+                <i title="#{sessionScope.button_refresh}" class="topbar-icon material-icons" onfocus="blur();">autorenew</i>
+                <span class="topbar-item-name">#{sessionScope.button_refresh}</span>
+            </a>
+        </li>
+    </ui:define>
+    <ui:define name="content">
+        <div class="ui-g">
+            <div class="ui-g-12">
+                <h:panelGroup id="card" layout="block" styleClass="card">
+                    <!-- Firmware Buttons -->
+                    <p:outputPanel id="buttonPanel">
+                        <h:form id="form_bt">
+                            <div style="float: left" class="webTitles">
+                                <h1>
+                                    <h:outputText value="#{sessionScope.firmware_title}" rendered="#{firmware.viewType.name =='list'}" />
+                                    <h:outputText value="#{sessionScope.firmware_title_search}" rendered="#{firmware.viewType.name=='search'}" />
+                                    <h:outputText value="#{sessionScope.firmware_title_detail}" rendered="#{firmware.viewType.name=='detail'}" />
+                                    <h:outputText value="#{sessionScope.firmware_title_edit}" rendered="#{firmware.viewType.name=='edit'}" />
+                                    <h:outputText value="#{sessionScope.firmware_title_add}" rendered="#{firmware.viewType.name=='add'}" />
+                                </h1>
+                            </div>
+                            <div align="right">
+                                <p:commandButton icon="ui-icon ui-icon-search"
+                                                 styleClass="#{firmware.viewType.name == 'search' ? 'active' : ''}"
+                                                 title="#{sessionScope.button_search}" update=":card"
+                                                 action="#{firmware.doChangeSearch}" immediate="true" />
+                                <p:spacer width="10" />
+                                <p:commandButton icon="ui-icon-playlist-add"
+                                                 styleClass="#{firmware.viewType.name == 'add' ? 'active' : ''}"
+                                                 title="#{sessionScope.access_title_add}" update=":card" action="#{firmware.doChangeAdd}"
+                                                 immediate="true" />
+                                <p:spacer width="10" />
+                                <p:commandButton id="dynaButton" icon="ui-icon-file-download" title="#{sessionScope.button_export}" />
+                                <p:menu overlay="true" trigger="dynaButton" my="left top" at="left bottom">
+                                    <p:menuitem value="#{sessionScope.table_export_all}" action="#{firmware.doExport}" ajax="false">
+                                        <f:setPropertyActionListener value="false" target="#{firmware.exportPageOnly}" />
+                                        <f:setPropertyActionListener value="csv" target="#{firmware.exportFormat}" />
+                                    </p:menuitem>
+                                    <p:menuitem value="#{sessionScope.table_export_current}" action="#{firmware.doExport}" ajax="false">
+                                        <f:setPropertyActionListener value="true" target="#{firmware.exportPageOnly}" />
+                                        <f:setPropertyActionListener value="csv" target="#{firmware.exportFormat}" />
+                                    </p:menuitem>
+                                </p:menu>
+                                <p:spacer width="10" />
+                                <p:commandButton id="toggler" type="button" style="float:right" icon="ui-icon-grid-on" title="#{sessionScope.button_togglercolumns}" styleClass="showOnDesktop" />
+                                <p:columnToggler datasource=":form_dt:dataTable" trigger="toggler">
+                                    <p:ajax event="toggle" listener="#{firmware.onColumnToggle}" update=":form_dt:dataTable" />
+                                </p:columnToggler>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+                    <!-- Firmware Search -->
+                    <p:outputPanel rendered="#{firmware.viewType.name == 'search'}">
+                        <h:form id="form_ft">
+                            <p:spacer height="10" />
+                            <p:panelGrid id="filterGrid" columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                                <h:panelGroup styleClass="md-inputfield padTop2">
+                                    <!--<p:inputText label="#{sessionScope.firmware_filter_name}" value="#{firmware.currentFilter.name}" maxlength="64" />-->
+                                    <label>#{sessionScope.firmware_filter_name}</label>
+                                </h:panelGroup>
+                                <h:panelGroup styleClass="md-inputfield padTop2">
+                                    <p:inputText label="#{sessionScope.firmware_filter_description}" value="#{firmware.currentFilter.description}" maxlength="256" />
+                                    <label>#{sessionScope.firmware_filter_description}</label>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <p:selectOneMenu value="#{firmware.currentItem.idModel.manufacturers}"
+                                                     converter="pojoConverter"
+                                                     styleClass="#{firmware.currentItem.idModel.manufacturers == null ? 'noSelectionItem' : ''}">
+                                        <p:ajax event="change" update="@this, modelSearch" />
+                                        <f:selectItem itemLabel="#{sessionScope.firmware_filter_manufacturer}" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems value="#{firmware.allManufacturers}" var="item" itemValue="#{item}" itemLabel="#{item.name}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                                <h:panelGroup id="modelSearch">
+                                    <p:selectOneMenu value="#{firmware.currentItem.idModel}" converter="pojoConverter" styleClass="#{firmware.currentItem.idModel == null ? 'noSelectionItem' : ''}">
+                                        <p:ajax event="change" update="@this" />
+                                        <f:selectItem itemLabel="#{sessionScope.firmware_filter_model}" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems
+                                            value="#{firmware.getAllModels(firmware.currentItem.idModel.manufacturers.id)}"
+                                            var="item" itemValue="#{item}" itemLabel="#{item.name}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <p:selectOneMenu value="#{firmware.currentItem}" converter="pojoConverter" styleClass="#{firmware.currentItem == null ? 'noSelectionItem' : ''}">
+                                        <p:ajax event="change" update="@this, modelSearch" />
+                                        <f:selectItem itemLabel="#{sessionScope.firmware_filter_firmware}" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems value="#{firmware.allFirmwares}" var="item" itemValue="#{item}" itemLabel="#{item.name}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                            </p:panelGrid>
+                            <p:spacer height="10" />
+                            <div align="right">
+                                <p:blockUI block="clean" trigger="filter" />
+                                <p:blockUI block="filter" trigger="clean" />
+                                <p:commandButton id="filter" value="#{sessionScope.button_search}"
+                                                 title="#{sessionScope.firmware_buscar_usuario}" update="filterGrid, :form_dt:dataTable"
+                                                 action="#{firmware.doSearch}" />
+                                <p:spacer width="10px" />
+                                <p:commandButton id="clean" value="#{sessionScope.button_clear}" action="#{firmware.doSearch}"
+                                                 update="filterGrid, :form_dt:dataTable" process="@this" immediate="true">
+                                    <f:setPropertyActionListener value="#{null}" target="#{firmware.currentItem}" />
+                                </p:commandButton>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+                    <!-- Firmware Detail -->
+                    <p:outputPanel rendered="#{firmware.viewType.name == 'detail'}">                    
+                        <p:focus/>
+                        <h:form id="form_dl">
+                            <p:spacer height="10" />
+                            <p:panelGrid columns="4" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                                <h:outputLabel for="nameDetail" value="#{sessionScope.firmware_name}" styleClass="itemLabel" />
+                                <h:outputText id="nameDetail" styleClass="itemValue" value="#{firmware.currentItem.name}" />
+                                <h:outputLabel for="descriptionDetail" value="#{sessionScope.firmware_description}" styleClass="itemLabel" />
+                                <h:outputText id="descriptionDetail" styleClass="itemValue" value="#{firmware.currentItem.description}" />
+                                <h:outputLabel for="manufacturerDetail" value="#{sessionScope.firmware_manufacturer}" styleClass="itemLabel" />
+                                <h:outputText id="manufacturerDetail" styleClass="itemValue" value="#{firmware.currentItem.manufacturer.manufacturer}" />
+                                <h:outputLabel for="modelDetail" value="#{sessionScope.firmware_model}" styleClass="itemLabel" />
+                                <h:outputText id="modelDetail" styleClass="itemValue" value="#{firmware.currentItem.strModels}" />
+                                <h:outputLabel for="firmwareDetail" value="#{sessionScope.firmware_firmware}" styleClass="itemLabel" />
+                                <h:outputText id="firmwareDetail" styleClass="itemValue" value="#{firmware.currentItem}" />
+                                <h:outputLabel for="numcpesDetail" value="#{sessionScope.firmware_numcpes}" styleClass="itemLabel" />
+                                <h:outputText id="numcpesDetail" styleClass="itemValue" value="#{firmware.currentItem.numCpes}" />
+                                <h:outputLabel for="ttCreationDetail" value="#{sessionScope.firmware_ttCreation}" styleClass="itemLabel" />
+                                <h:outputText id="ttCreationDetail" styleClass="itemValue" value="#{firmware.currentItem.ttcreation}">
+                                    <f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm" timeZone="Europe/Amsterdam" />
+                                </h:outputText>
+                                <h:outputLabel for="ttModificationDetail" value="#{sessionScope.firmware_ttModification}" styleClass="itemLabel" />
+                                <h:outputText id="ttModificationDetail" styleClass="itemValue" value="#{firmware.currentItem.ttmodification}">
+                                    <f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm" timeZone="Europe/Amsterdam" />
+                                </h:outputText>
+                            </p:panelGrid>
+                            <p:spacer height="10" />
+                            <div align="right">
+                                <p:blockUI block="processCancelDetail" trigger="processCancelDetail" />
+                                <p:commandButton id="processCancelDetail" value="#{sessionScope.button_cancel}" update=":card"
+                                                 action="#{firmware.doSetViewTypeList}" styleClass="ui-priority-primary"
+                                                 style="margin-bottom:10px"  oncomplete="PF('table').unselectAllRows()"/>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>                    
+                    <!-- Firmware Add -->
+                    <p:outputPanel rendered="#{firmware.viewType.name == 'add'}">
+                        <h:form id="form_at" enctype="multipart/form-data">
+                            <p:spacer height="10" />
+                            <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                                <h:panelGroup styleClass="md-inputfield">
+                                    <p:inputText id="nameAdd" label="#{sessionScope.firmware_firmware}"
+                                                 value="#{firmware.currentItem.name}" required="true"
+                                                 requiredMessage="#{sessionScope.firmware_firmware_required}" validator="notEmptyValidator"
+                                                 validatorMessage="#{sessionScope.firmware_firmware_required}" maxlength="64" />
+                                    <label>#{sessionScope.firmware_name}</label>
+                                </h:panelGroup>
+                                <h:panelGroup id="uploadFileAdd">
+                                    <p:fileUpload required="true" 
+                                                  label="#{sessionScope.upload_file_select}"
+                                                  uploadLabel="#{sessionScope.upload_file_upload}"
+                                                  cancelLabel="#{sessionScope.upload_file_cancel}"
+                                                  fileUploadListener="#{upload.doHandleFileUpload}" 
+                                                  mode="advanced" 
+                                                  auto="true"
+                                                  dragDropSupport="true" 
+                                                  multiple="false" 
+                                                  sizeLimit="52428800" 
+                                                  style="width:100%"
+                                                  update="uploadFileAdd" 
+                                                  rendered="#{upload.uploadedFile==null}"/>
+                                    <h:outputText value="#{upload.uploadedFile.fileName}"
+                                                  rendered="#{upload.uploadedFile!=null}" />
+                                    <p:spacer width="10" />
+                                    <p:commandButton icon="ui-icon ui-icon-close" actionListener="#{upload.doClear()}"
+                                                     update="uploadFileAdd" rendered="#{upload.uploadedFile!=null}" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <p:selectOneMenu id="manufacturerAdd" 
+                                                     value="#{firmware.manufacturer}"
+                                                     converter="pojoConverter" 
+                                                     required="true"
+                                                     requiredMessage="#{sessionScope.firmware_manufacturer_required}"
+                                                     validator="notEmptyValidator"
+                                                     validatorMessage="#{sessionScope.firmware_manufacturer_required}"
+                                                     styleClass="#{firmware.manufacturer == null ? 'noSelectionItem' : ''}">
+                                        <p:ajax event="change" listener="#{firmware.doClearModels()}" update="@this, modelAdd" />
+                                        <f:selectItem itemLabel="#{sessionScope.firmware_manufacturer}" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems value="#{firmware.allManufacturers}" var="manufacturer" itemValue="#{manufacturer}" itemLabel="#{manufacturer.name}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <!--<p:outputLabel for="mod" value="#{sessionScope.cpe_filter_model}" />-->
+<!--                                    <p:selectManyMenu id="mod" value="#{firmware.currentItem.idModel}"
+                                                      converter="pojoConverter" filter="true" filterMatchMode="contains" showCheckbox="true"
+                                                      scrollHeight="100"
+                                                      styleClass="#{firmware.currentItem.idModel != null ? 'myclass marTop5' : 'marTop5'}"
+                                                      required="true" requiredMessage="#{sessionScope.firmware_model_required}"
+                                                      validator="notEmptyValidator" validatorMessage="#{sessionScope.firmware_model_required}">
+                                        <p:ajax event="change" update="@this" />
+                                        <f:selectItems
+                                            value="#{firmware.getAllModels(firmware.manufacturer)}"
+                                            var="item" itemValue="#{item}" itemLabel="#{item.name}" />
+                                    </p:selectManyMenu>-->
+                                    
+                                    <p:selectOneMenu id="modelAdd" 
+                                                     value="#{firmware.model}"
+                                                     converter="pojoConverter" 
+                                                     required="true"
+                                                     requiredMessage="#{sessionScope.firmware_model_required}"
+                                                     validator="notEmptyValidator"
+                                                     validatorMessage="#{sessionScope.firmware_model_required}"
+                                                     styleClass="#{firmware.model == null ? 'noSelectionItem' : ''}">
+                                        <p:ajax event="change" update="@this" />
+                                        <f:selectItem itemLabel="#{sessionScope.cpe_filter_model}" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems value="#{firmware.getAllModels(firmware.manufacturer)}" var="model" itemValue="#{model}" itemLabel="#{model.name}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                            </p:panelGrid>
+                            <p:spacer height="10" />
+                            <div align="right">
+                                <p:blockUI block="processAdd" trigger="processAdd" />
+                                <p:blockUI block="processCancelAdd" trigger="processCancelAdd" />
+                                <p:commandButton id="processAdd" value="#{sessionScope.button_save}" action="#{firmware.doAdd}"
+                                                 update=":card" styleClass="ui-priority-primary" style="margin-bottom:10px" />
+                                <p:spacer width="5" />
+                                <p:commandButton id="processCancelAdd" value="#{sessionScope.button_cancel}"
+                                                 action="#{firmware.doSetViewTypeList}" immediate="true" update=":card" process="@this"
+                                                 styleClass="ui-priority-primary" style="margin-bottom:10px">
+                                    <p:resetInput target="@form" />
+                                </p:commandButton>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+                    <!-- Firmware Edit -->
+                    <p:outputPanel rendered="#{firmware.viewType.name == 'edit'}">
+                        <h:form id="form_et" enctype="">
+                            <p:spacer height="10" />
+                            <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                                <h:panelGroup styleClass="md-outputfield">
+                                    <h:outputText id="nameEdit" value="#{firmware.currentItem.name != null ? firmware.currentItem.name : '&#160;'}" />
+                                    <label>#{sessionScope.firmware_name}</label>
+                                </h:panelGroup>
+                                <h:panelGroup id="uploadFileEdit">
+                                    <p:fileUpload required="true" 
+                                                  label="#{sessionScope.upload_file_select}"
+                                                  uploadLabel="#{sessionScope.upload_file_upload}"
+                                                  cancelLabel="#{sessionScope.upload_file_cancel}"
+                                                  fileUploadListener="#{upload.doHandleFileUpload}" 
+                                                  mode="advanced" 
+                                                  auto="true"
+                                                  dragDropSupport="true" 
+                                                  multiple="false" 
+                                                  sizeLimit="52428800" 
+                                                  style="width:100%"
+                                                  update="uploadFileEdit"
+                                                  rendered="#{upload.uploadedFile==null and  firmware.currentItem.name==null}"
+                                                  allowTypes="/(\.|\/)(bin)$/"/>
+                                    <h:outputText
+                                        value="#{upload.uploadedFile.fileName != null ? upload.uploadedFile.fileName : firmware.currentItem.name}"
+                                        rendered="#{upload.uploadedFile != null or (upload.uploadedFile==null and firmware.currentItem.name!=null)}" />
+                                    <p:spacer width="10" />
+                                    <p:commandButton icon="ui-icon ui-icon-close" actionListener="#{upload.doClear()}"
+                                                     action="#{firmware.doClearDescription()}" update="uploadFileEdit"
+                                                     rendered="#{upload.uploadedFile != null or (upload.uploadedFile == null and firmware.currentItem.name != null)}" />
+                                </h:panelGroup>
+                                <h:panelGroup styleClass="md-outputfield">
+                                    <h:outputText id="manufacturerEdit"
+                                                  value="#{firmware.manufacturer != null ? firmware.manufacturer : '&#160;'}" />
+                                    <label>#{sessionScope.firmware_manufacturer}</label>
+                                </h:panelGroup>
+                                <h:panelGroup id="modelEdit">
+                                    <p:outputLabel for="mod" value="#{sessionScope.cpe_filter_model}" />
+                                    <p:selectManyMenu id="mod" value="#{firmware.model}"
+                                                      converter="pojoConverter" required="true"
+                                                      requiredMessage="#{sessionScope.firmware_model_required}" validator="notEmptyValidator"
+                                                      validatorMessage="#{sessionScope.firmware_model_required}" filter="true"
+                                                      filterMatchMode="contains" showCheckbox="true" scrollHeight="100"
+                                                      styleClass="#{firmware.model != null ? 'myclass marTop5' : 'marTop5'}">
+                                        <p:ajax event="change" update="@this" />
+                                        <f:selectItems
+                                            value="#{firmware.getAllModels(firmware.manufacturer)}"
+                                            var="item" itemValue="#{item}" itemLabel="#{item.name}" />
+                                    </p:selectManyMenu>
+                                </h:panelGroup>
+                            </p:panelGrid>
+                            <p:spacer height="10" />
+                            <div align="right">
+                                <p:blockUI block="processEdit" trigger="processEdit" />
+                                <p:blockUI block="processCancelEdit" trigger="processCancelEdit" />
+                                <p:commandButton id="processEdit" value="#{sessionScope.button_save}"
+                                                 action="#{firmware.doEdit}" update=":card" styleClass="ui-priority-primary"
+                                                 style="margin-bottom:10px" />
+                                <p:spacer width="5" />
+                                <p:commandButton id="processCancelEdit" value="#{sessionScope.button_cancel}"
+                                                 action="#{firmware.doSetViewTypeList}" immediate="true" update=":card" process="@this"
+                                                 styleClass="ui-priority-primary" style="margin-bottom:10px">
+                                    <p:resetInput target="@form" />
+                                </p:commandButton>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+                    <p:spacer height="10" />                    
+                    <!-- Firmware Table -->
+                    <p:outputPanel>
+                        <h:form id="form_dt">
+                            <p:dataTable id="dataTable" 
+                                         var="item" 
+                                         editable="false" 
+                                         lazy="true" 
+                                         widgetVar="table" 
+                                         reflow="true"
+                                         emptyMessage="#{sessionScope.table_empty}" 
+                                         value="#{firmware.items}" 
+                                         selectionMode="single"
+                                         rowHover="true" paginator="true" rows="10" paginatorPosition="bottom"
+                                         currentPageReportTemplate="(#{sessionScope.table_records}: {startRecord} - {endRecord} #{sessionScope.table_of} {totalRecords}, #{sessionScope.table_page} {currentPage} #{sessionScope.table_of} {totalPages})"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15,20,50">
+                                <f:facet name="header">
+                                    <h:outputText value="#{sessionScope.firmware_table_title}" />                                    
+                                    <i class="material-icons table-filter-icon">search</i>
+                                </f:facet>
+                                <p:ajax event="rowSelect" listener="#{firmware.doChangeDetail}" oncomplete="window.scrollTo(0,0);" update=":card" />
+                                <p:ajax event="rowUnselect" listener="#{firmware.doSetViewTypeList}" update=":card" />
+                                <p:column 
+                                    sortBy="#{item.idModel.manufacturer.name}"
+                                    visible="#{firmware.toggleableColumns[0]}"
+                                    exportable="#{firmware.toggleableColumns[0]}"
+                                    filterBy="#{item.idModel.manufacturer.name}"
+                                    headerText="#{sessionScope.firmware_table_manufacturer}"
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{item.idModel.manufacturer.name}"
+                                                  title="#{item.idModel.manufacturer.name}" />
+                                </p:column>
+                                <p:column 
+                                    priority="1" 
+                                    visible="#{firmware.toggleableColumns[1]}"
+                                    exportable="#{firmware.toggleableColumns[1]}"
+                                    sortBy="#{item.idModel.name}"
+                                    filterBy="#{item.idModel.name}"
+                                    headerText="#{sessionScope.firmware_table_model}"
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{item.idModel.name}" title="#{item.idModel.name}" />
+                                </p:column>
+                                <p:column sortBy="#{item.name}" priority="2" visible="#{firmware.toggleableColumns[2]}"
+                                          exportable="#{firmware.toggleableColumns[2]}">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.firmware_table_firmware}" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.name}" title="#{item.name}" />
+                                </p:column>
+                                <p:column 
+                                    priority="3"
+                                    visible="#{firmware.toggleableColumns[3]}"
+                                    exportable="#{firmware.toggleableColumns[3]}"
+                                    styleClass="dateColumn"
+                                    sortBy="#{item.creationDate}"
+                                    headerText="#{sessionScope.firmware_table_ttCreation}">
+                                    <h:outputText value="#{item.creationDate}" title="#{item.creationDate}">
+                                        <f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm" timeZone="Europe/Amsterdam" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column 
+                                    sortBy="#{item.updateDate}" 
+                                    priority="4"
+                                    visible="#{firmware.toggleableColumns[4]}"
+                                    exportable="#{firmware.toggleableColumns[4]}"
+                                    styleClass="dateColumn"
+                                    headerText="#{sessionScope.firmware_table_ttModification}">
+                                    <h:outputText value="#{item.updateDate}" title="#{item.updateDate}">
+                                        <f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm" timeZone="Europe/Amsterdam" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column exportable="false" toggleable="false" width="113">
+                                    <p:commandButton icon="ui-icon ui-icon-edit"
+                                                     styleClass="#{firmware.currentItem.id == item.id and firmware.viewType.name == 'edit' ? 'active' : ''}"
+                                                     update=":card" title="#{sessionScope.button_edit}" action="#{firmware.doChangeEdit}"
+                                                     immediate="true" onsuccess="window.location='#card'"
+                                                     oncomplete="PF('table').unselectAllRows(); window.scrollTo(0,0);">
+                                        <f:setPropertyActionListener value="#{item}" target="#{firmware.currentItem}" />
+                                    </p:commandButton>
+                                    <p:spacer width="5" />
+                                    <p:commandButton icon="ui-icon ui-icon-trash" title="#{sessionScope.button_delete}"
+                                                     oncomplete="PF('confirmDelete').show();"
+                                                     actionListener="#{firmware.setCurrentItem(item)}" immediate="true"
+                                                     />
+                                    <p:spacer width="5" />
+                                    <p:commandButton icon="ui-icon ui-icon-file-download" title="#{sessionScope.button_download}"
+                                                     actionListener="#{firmware.setCurrentItem(item)}" immediate="true" ajax="false">
+                                        <p:fileDownload value="#{firmware.doDownloadFile()}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </p:outputPanel>
+                    
+                    <!-- Firmware Dialog Delete -->
+                    <p:confirmDialog id="confirmDialog" message="#{sessionScope.disclaimer_delete}"
+                                     header="#{sessionScope.header_warning}" severity="alert" widgetVar="confirmDelete">
+                        <p:blockUI block="delete" trigger="delete" />
+                        <p:blockUI block="cancelDelete" trigger="delete" />
+                        <p:commandButton id="delete" value="#{sessionScope.button_accept}" action="#{firmware.doDelete}"
+                                         update=":form_dt:dataTable" oncomplete="PF('confirmDelete').hide();" />
+                        <p:commandButton value="#{sessionScope.button_cancel}" id="cancelDelete"
+                                         onclick="PF('confirmDelete').hide();" type="button" />
+                    </p:confirmDialog>
+                </h:panelGroup>
+            </div>
+        </div>
+    </ui:define>
+</ui:composition>

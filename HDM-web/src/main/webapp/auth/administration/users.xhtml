@@ -9,18 +9,18 @@
         <p:remoteCommand name="doRefresh" action="#{users.doRefresh}" update=":card" />
         <p:remoteCommand name="fixSearch" action="#{users.doSecondStepFixSearch()}" update=":form_dt:dataTable"/>
         <li>
-	    <a href="#" onclick="doRefresh();" onfocus="blur();">
-		<i title="#{sessionScope.button_refresh}" class="topbar-icon material-icons">autorenew</i>
-		<span class="topbar-item-name">#{sessionScope.button_refresh}</span>
+            <a href="#" onclick="doRefresh();" onfocus="blur();">
+                <i title="#{sessionScope.button_refresh}" class="topbar-icon material-icons">autorenew</i>
+                <span class="topbar-item-name">#{sessionScope.button_refresh}</span>
             </a>
-	</li>
+        </li>
     </ui:define>
     <ui:define name="content">
         <div class="ui-g">
             <div class="ui-g-12">
                 <h:panelGroup id="card" layout="block" styleClass="card">
-		    <!-- Buttons -->
-		    <p:outputPanel id="buttonPanel">
+                    <!-- Buttons -->
+                    <p:outputPanel id="buttonPanel">
                         <h:form id="form_bt">
                             <div style="float: left" class="webTitles">
                                 <h1>
@@ -36,7 +36,7 @@
                                                  title="#{sessionScope.users_title_add}" update=":card" action="#{users.doChangeAdd}"
                                                  immediate="true" />
                                 <p:spacer width="10" />
-                                <p:commandButton id="dynaButton" icon="ui-icon-file-download" title="#{button_export}" />
+                                <p:commandButton id="dynaButton" icon="ui-icon-file-download" title="#{sessionScope.button_export}" />
                                 <p:menu overlay="true" trigger="dynaButton" my="left top" at="left bottom">
                                     <p:menuitem value="#{sessionScope.table_export_all}" action="#{users.doExport}" ajax="false">
                                         <f:setPropertyActionListener value="false" target="#{users.exportPageOnly}" />
@@ -56,7 +56,7 @@
                             </div>
                         </h:form>
                     </p:outputPanel>
-		    <!-- Detail User -->
+                    <!-- Detail User -->
                     <p:outputPanel rendered="#{users.viewType.name == 'detail'}">
                         <p:focus/>
                         <p:spacer height="10" />
@@ -75,14 +75,14 @@
 
                             <h:outputLabel for="ttCreationDetail" value="#{sessionScope.tt_creation}:" styleClass="itemLabel" />
                             <h:outputText id="ttCreationDetail" value="#{users.currentItem.creationDate}">
-				<f:convertDateTime type="both" pattern="yyyy-MM-dd HH:mm"/>
-			    </h:outputText>
+                                <f:convertDateTime type="both" pattern="yyyy-MM-dd HH:mm"/>
+                            </h:outputText>
 
                             <h:outputLabel for="emailDetail" value="#{sessionScope.users_email}:" styleClass="itemLabel" />
                             <h:outputText id="emailDetail" value="#{users.currentItem.email}" />
 
-                            <h:outputText value="" />
-                            <h:outputText value="" />
+                            <h:outputLabel for="clientDetail" value="#{sessionScope.users_client}:" styleClass="itemLabel" />
+                            <h:outputText id="clientDetail" value="#{users.currentItem.idClient.name}" />
                         </p:panelGrid>
                         <p:spacer height="10" />
                         <div align="right">
@@ -92,7 +92,7 @@
                                              oncomplete="PF('table').unselectAllRows()" />
                         </div>
                     </p:outputPanel>
-		    <!-- Add User -->
+                    <!-- Add User -->
                     <p:outputPanel rendered="#{users.viewType.name == 'add'}">
                         <h:form id="form_at">
                             <p:spacer height="10" />
@@ -106,9 +106,9 @@
                                 </h:panelGroup>
 
                                 <p:selectOneMenu id="roleAdd"
-						 value="#{users.currentItem.idRole}"
-						 required="true"
-						 converter="pojoConverter"
+                                                 value="#{users.currentItem.idRole}"
+                                                 required="true"
+                                                 converter="pojoConverter"
                                                  requiredMessage="#{sessionScope.users_role_required}"
                                                  styleClass="#{users.currentItem.idRole == null ? 'noSelectionItem' : ''}">
                                     <f:selectItem itemLabel="#{sessionScope.users_role}" itemValue="" noSelectionOption="true" />
@@ -160,6 +160,15 @@
                                                  validatorMessage="#{sessionScope.users_email_required}" maxlength="64" />
                                     <label>#{sessionScope.users_email}</label>
                                 </h:panelGroup>
+                                
+                                <p:selectOneMenu id="clientAdd"
+                                                 value="#{users.currentItem.idClient}"
+                                                 converter="pojoConverter"
+                                                 styleClass="#{users.currentItem.idClient == null ? 'noSelectionItem' : ''}">
+                                    <f:selectItem itemLabel="#{sessionScope.users_client}" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{users.availableClients}" var="client" itemLabel="#{client.name}" itemValue="#{client}"/>
+                                    <p:ajax event="change" update="@this"/>
+                                </p:selectOneMenu>
                             </p:panelGrid>
                             <p:spacer height="10" />
                             <div align="right">
@@ -176,7 +185,7 @@
                             </div>
                         </h:form>
                     </p:outputPanel>
-		    <!-- Edit User -->
+                    <!-- Edit User -->
                     <p:outputPanel rendered="#{users.viewType.name == 'edit'}">
                         <h:form id="form_et">
                             <p:spacer height="10" />
@@ -187,9 +196,9 @@
                                 </h:panelGroup>
 
                                 <p:selectOneMenu id="roleEdit"
-						 value="#{users.currentItem.idRole}"
-						 required="true"
-						 converter="pojoConverter"
+                                                 value="#{users.currentItem.idRole}"
+                                                 converter="pojoConverter"
+                                                 required="true"
                                                  requiredMessage="#{sessionScope.users_role_required}"
                                                  styleClass="#{users.currentItem.idRole == null ? 'noSelectionItem' : ''}">
                                     <f:selectItem itemLabel="#{sessionScope.users_role}" itemValue="" noSelectionOption="true" />
@@ -198,23 +207,29 @@
                                 </p:selectOneMenu>
 
                                 <h:panelGroup styleClass="md-inputfield ">
-                                    <p:password id="passwordEdit" label="#{sessionScope.users_passwd}"
-                                                value="#{users.currentItem.password}" feedback="true" inline="true"
-                                                promptLabel="#{sessionScope.users_passwd}" weakLabel="#{sessionScope.users_passwd_weak}"
-                                                goodLabel="#{sessionScope.users_passwd_good}" strongLabel="#{sessionScope.users_passwd_strong}"
+                                    <p:password redisplay="true" id="passwordEdit" 
+                                                label="#{sessionScope.users_passwd}"
+                                                value="#{users.currentItem.backupPswd}" 
+                                                feedback="true" inline="true"
+                                                promptLabel="#{sessionScope.users_passwd}" 
+                                                weakLabel="#{sessionScope.users_passwd_weak}"
+                                                goodLabel="#{sessionScope.users_passwd_good}" 
+                                                strongLabel="#{sessionScope.users_passwd_strong}"
                                                 maxlength="128" />
                                     <label>#{sessionScope.users_passwd}</label>
                                 </h:panelGroup>
 
                                 <h:panelGroup styleClass="md-inputfield ">
-                                    <p:password id="passwordConfEdit" label="#{sessionScope.users_passwdconf}"
+                                    <p:password id="passwordConfEdit" 
+                                                redisplay="true" 
+                                                label="#{sessionScope.users_passwdconf}"
                                                 value="#{users.currentItem.passwordConf}" promptLabel="#{sessionScope.users_passwd}"
                                                 weakLabel="#{sessionScope.users_passwd_weak}" goodLabel="#{sessionScope.users_passwd_good}"
                                                 strongLabel="#{sessionScope.users_passwd_strong}" maxlength="128" />
                                     <label>#{sessionScope.users_passwdconf}</label>
                                 </h:panelGroup>
 
-				<h:panelGroup styleClass="md-inputfield ">
+                                <h:panelGroup styleClass="md-inputfield ">
                                     <p:inputText id="firstnameEdit" label="#{sessionScope.users_firstname}"
                                                  value="#{users.currentItem.firstname}" required="true"
                                                  requiredMessage="#{sessionScope.users_firstname_required}" validator="notEmptyValidator"
@@ -237,11 +252,17 @@
                                                  validatorMessage="#{sessionScope.users_email_required}" maxlength="64" />
                                     <label>#{sessionScope.users_email}</label>
                                 </h:panelGroup>
-
+                                
+                                <p:selectOneMenu id="clientEdit"
+                                                 converter="pojoConverter"
+                                                 value="#{users.currentItem.idClient}"
+                                                 styleClass="#{users.currentItem.idClient == null ? 'noSelectionItem' : ''}">
+                                    <f:selectItem itemLabel="#{sessionScope.users_client}" itemValue="#{null}" noSelectionOption="true" />
+                                    <f:selectItems value="#{users.availableClients}" var="c" itemLabel="#{c.name}" itemValue="#{c}"/>
+                                    <p:ajax event="change" update="@this"/>
+                                </p:selectOneMenu>
                             </p:panelGrid>
-
                             <p:spacer height="10" />
-
                             <div align="right">
                                 <p:blockUI block="processEdit" trigger="processEdit" />
                                 <p:blockUI block="processCancelEdit" trigger="processCancelEdit" />
@@ -262,87 +283,97 @@
 
                     </p:outputPanel>
                     <p:spacer height="10" />
-		    <!-- Table User -->
+                    <!-- Table User -->
                     <p:outputPanel>
                         <h:form id="form_dt">
                             <p:dataTable
-				id="dataTable"
-				rowKey="#{item.id}"
-				var="item"
-				editable="false"
-				lazy="true"
-				widgetVar="table"
-				reflow="true"
-				emptyMessage="#{sessionScope.table_empty}"
-				value="#{users.items}"
-				selectionMode="single"
-				rowHover="true"
-				paginator="true"
-				rows="10"
-				paginatorPosition="bottom"
-				currentPageReportTemplate="(#{sessionScope.table_records}: {startRecord} - {endRecord} #{sessionScope.table_of} {totalRecords}, #{sessionScope.table_page} {currentPage} #{sessionScope.table_of} {totalPages})"
-				paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-				rowsPerPageTemplate="5,10,15,20,50">
+                                id="dataTable"
+                                rowKey="#{item.id}"
+                                var="item"
+                                editable="false"
+                                lazy="true"
+                                widgetVar="table"
+                                reflow="true"
+                                emptyMessage="#{sessionScope.table_empty}"
+                                value="#{users.items}"
+                                selectionMode="single"
+                                rowHover="true"
+                                paginator="true"
+                                rows="10"
+                                paginatorPosition="bottom"
+                                currentPageReportTemplate="(#{sessionScope.table_records}: {startRecord} - {endRecord} #{sessionScope.table_of} {totalRecords}, #{sessionScope.table_page} {currentPage} #{sessionScope.table_of} {totalPages})"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,20,50">
 
                                 <f:facet name="header">
                                     <h:outputText value="#{sessionScope.users_table_title}" />
 <!--                                    <h:panelGroup layout="block" rendered="#{users.isItemsFiltered}">
-					<i class="material-icons table-filter-icon">search</i>
+                                        <i class="material-icons table-filter-icon">search</i>
                                     </h:panelGroup>-->
                                 </f:facet>
 
                                 <p:ajax event="rowSelect" listener="#{users.doChangeDetail}" oncomplete="window.scrollTo(0,0);" update=":card" />
                                 <p:ajax event="rowUnselect" listener="#{users.doSetViewTypeList}" update=":card" />
-				<!--cabecera-->
+                                <!--cabecera-->
                                 <p:column
-				    sortBy="#{item.username}"
-				    visible="#{users.toggleableColumns[0]}"
-				    exportable="#{users.toggleableColumns[0]}"
-				    filterBy="#{item.username}"
-				    filterMatchMode="contains"
-				    headerText="#{sessionScope.users_table_username}">
+                                    sortBy="#{item.username}"
+                                    visible="#{users.toggleableColumns[0]}"
+                                    exportable="#{users.toggleableColumns[0]}"
+                                    filterBy="#{item.username}"
+                                    filterMatchMode="contains"
+                                    headerText="#{sessionScope.users_table_username}">
                                     <h:outputText value="#{item.username}"/>
                                 </p:column>
 
                                 <p:column
-				    sortBy="#{item.firstname}"
-				    filterBy="#{item.firstname}"
-				    headerText="#{sessionScope.users_table_firstname}"
-				    filterMatchMode="contains"
-				    visible="#{users.toggleableColumns[1]}"
-				    exportable="#{users.toggleableColumns[1]}">
+                                    sortBy="#{item.firstname}"
+                                    filterBy="#{item.firstname}"
+                                    headerText="#{sessionScope.users_table_firstname}"
+                                    filterMatchMode="contains"
+                                    visible="#{users.toggleableColumns[1]}"
+                                    exportable="#{users.toggleableColumns[1]}">
                                     <h:outputText value="#{item.firstname}" />
                                 </p:column>
 
                                 <p:column
-				    sortBy="#{item.lastname}"
-				    visible="#{users.toggleableColumns[2]}"
-				    exportable="#{users.toggleableColumns[2]}"
-				    filterBy="#{item.lastname}"
-				    filterMatchMode="contains"
-				    headerText="#{sessionScope.users_table_lastname}">
+                                    sortBy="#{item.lastname}"
+                                    visible="#{users.toggleableColumns[2]}"
+                                    exportable="#{users.toggleableColumns[2]}"
+                                    filterBy="#{item.lastname}"
+                                    filterMatchMode="contains"
+                                    headerText="#{sessionScope.users_table_lastname}">
                                     <h:outputText value="#{item.lastname}" />
                                 </p:column>
 
                                 <p:column
-				    sortBy="#{item.idRole}"
-				    filterBy="#{item.idRole}"
-				    filterMatchMode="contains"
-				    visible="#{users.toggleableColumns[3]}"
-				    exportable="#{users.toggleableColumns[3]}"
-				    headerText="#{sessionScope.users_table_role}">
+                                    sortBy="#{item.idRole}"
+                                    filterBy="#{item.idRole}"
+                                    filterMatchMode="contains"
+                                    visible="#{users.toggleableColumns[3]}"
+                                    exportable="#{users.toggleableColumns[3]}"
+                                    headerText="#{sessionScope.users_table_role}">
                                     <h:outputText value="#{item.idRole.name}"/>
                                 </p:column>
 
                                 <p:column
-				    sortBy="#{item.creationDate}"
-				    visible="#{users.toggleableColumns[4]}"
-				    exportable="#{users.toggleableColumns[4]}"
-				    styleClass="dateColumn"
-				    headerText="#{sessionScope.tt_creation}">
+                                    sortBy="#{item.idClient}"
+                                    filterBy="#{item.idClient}"
+                                    filterMatchMode="contains"
+                                    visible="#{users.toggleableColumns[4]}"
+                                    exportable="#{users.toggleableColumns[4]}"
+                                    headerText="#{sessionScope.users_table_client}">
+                                    <h:outputText value="#{item.idClient.name}"/>
+                                </p:column>
+
+                                <p:column
+                                    sortBy="#{item.creationDate}"
+                                    visible="#{users.toggleableColumns[5]}"
+                                    exportable="#{users.toggleableColumns[5]}"
+                                    styleClass="dateColumn"
+                                    headerText="#{sessionScope.tt_creation}">
                                     <h:outputText value="#{item.creationDate}">
-					<f:convertDateTime type="both" pattern="dd-MM-yyyy HH:mm"/>
-				    </h:outputText>
+                                        <f:convertDateTime type="both" pattern="dd-MM-yyyy HH:mm"/>
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column exportable="false" toggleable="false" width="73px;" >

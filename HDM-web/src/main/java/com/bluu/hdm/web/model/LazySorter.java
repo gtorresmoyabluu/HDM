@@ -5,7 +5,7 @@
  */
 package com.bluu.hdm.web.model;
 
-import com.bluu.hdm.web.pojo.Role;
+import com.bluu.hdm.web.pojo.administracion.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Comparator;
 import java.util.HashMap;

@@ -6,15 +6,14 @@ import com.bluu.hdm.web.exporter.DataTableExporter;
 import com.bluu.hdm.web.exporter.Exporter;
 import com.bluu.hdm.web.exporter.ExporterFactory;
 import com.bluu.hdm.web.model.APILazyDataModel;
-import com.bluu.hdm.web.pojo.Role;
-import com.bluu.hdm.web.pojo.User;
-import com.bluu.hdm.web.rest.ConsumeREST;
-import com.bluu.hdm.web.rest.IConsumeREST;
+import com.bluu.hdm.web.pojo.administracion.Client;
+import com.bluu.hdm.web.pojo.administracion.Role;
+import com.bluu.hdm.web.pojo.administracion.User;
+import com.bluu.hdm.web.rest.FactoryRest;
 import com.bluu.hdm.web.util.AuthorizationUtil;
 import com.bluu.hdm.web.util.GetClassUtils;
 import com.bluu.hdm.web.util.MessageUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +27,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.primefaces.component.datatable.DataTable;
@@ -47,7 +45,7 @@ public class UsersFace implements Serializable {
     private static final long serialVersionUID = 1L;
     private static Matcher mather;
     Pattern pattern = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-	    + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+            + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
 
     private User currentItem;
     private LazyDataModel<Object> items;
@@ -62,137 +60,127 @@ public class UsersFace implements Serializable {
     private boolean exportPageOnly;
 
     private ObjectMapper mapper;
-    private IConsumeREST apiRest;
-    private MultivaluedMap params;
-    private User userSession;
 
     @PostConstruct
     public void init() {
-	if (mapper == null) {
-	    mapper = new ObjectMapper();
-	}
-	if (apiRest == null) {
-	    apiRest = new ConsumeREST();
-	}
-	if (userSession == null && AuthorizationUtil.getUserSession(FacesContext.getCurrentInstance()).getUser() != null) {
-	    userSession = AuthorizationUtil.getUserSession(FacesContext.getCurrentInstance()).getUser();
-	}
-	if (params == null) {
-	    params = new MultivaluedMapImpl();
-	}
-	if (!params.containsKey("access_token")) {
-	    params.add("access_token", userSession.getToken().getAccess_token());
-	}
-
-	doRefresh();
-	toggleableColumns = Arrays.asList(true, true, true, true, true);
+        if (mapper == null) {
+            mapper = new ObjectMapper();
+        }
+        doRefresh();
+        toggleableColumns = Arrays.asList(true, true, true, true, true, false);
     }
 
     public void doAdd() {
-	try {
-	    // Valida las entradas
-	    if (!validateAdd()) {
-		return;
-	    } else if (apiRest.getRestAPI(String.format("%s/getUserName/%s", BEAN_NAME, currentItem.getUsername().trim().toLowerCase()), params) != null) {
-		MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_username_exits");
-		FacesContext.getCurrentInstance().validationFailed();
-	    } else {
-		apiRest.postRestAPI(String.format("%s/add", BEAN_NAME), params, currentItem);
-		String userLogged = AuthorizationUtil.getUserSession(FacesContext.getCurrentInstance()).getUser().getUsername();
-		MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "users_add_ok");
-	    }
-	} catch (Exception e) {
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, UsersFace.BEAN_NAME, String.format("Error: %s", e.getMessage()));
-	}
+        try {
+            // Valida las entradas
+            if (!validateAdd()) {
+                return;
+            } else if (FactoryRest.getInstance().getRestAPI(String.format("%s/getUserName/%s", BEAN_NAME, currentItem.getUsername().trim().toLowerCase())) != null) {
+                MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_username_exits");
+                FacesContext.getCurrentInstance().validationFailed();
+            } else {
+                FactoryRest.getInstance().postRestAPI(String.format("%s/add", BEAN_NAME), currentItem);
+                String userLogged = AuthorizationUtil.getUserSession(FacesContext.getCurrentInstance()).getUser().getUsername();
+                MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "users_add_ok");
+                // Refresca vista
+                doRefreshWOFilter();
+            }
+        } catch (Exception e) {
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, UsersFace.BEAN_NAME, String.format("Error: %s", e.getMessage()));
+        }
     }
 
     public void doChangeAdd() {
-	if (viewType != ViewTypeEnum.add) {
-	    currentItem = new User();
-	    currentItem.setIdRole(new Role());
-	    viewType = ViewTypeEnum.add;
-	} else {
-	    viewType = ViewTypeEnum.list;
-	}
+        if (viewType != ViewTypeEnum.add) {
+            currentItem = new User();
+            currentItem.setIdRole(new Role());
+            currentItem.setIdClient(new Client());
+            viewType = ViewTypeEnum.add;
+        } else {
+            viewType = ViewTypeEnum.list;
+        }
     }
 
     public void doChangeDetail(SelectEvent event) {
-	currentItem = new User();
-	currentItem.setIdRole(new Role());
-	if (event.getObject() != null) {
-	    currentItem = mapper.convertValue(event.getObject(), User.class);
-	}
-	if (viewType != ViewTypeEnum.detail) {
-	    viewType = ViewTypeEnum.detail;
-	}
+        currentItem = new User();
+        currentItem.setIdRole(new Role());
+        currentItem.setIdClient(new Client());
+        if (event.getObject() != null) {
+            currentItem = mapper.convertValue(event.getObject(), User.class);
+        }
+        if (viewType != ViewTypeEnum.detail) {
+            viewType = ViewTypeEnum.detail;
+        }
     }
 
     public void doChangeEdit() {
-	// Realiza un clonado profundo del objeto
-	currentItem = mapper.convertValue(currentItem, User.class);
-	if (viewType != ViewTypeEnum.edit) {
-	    viewType = ViewTypeEnum.edit;
-	}
+        // Realiza un clonado profundo del objeto
+        currentItem = mapper.convertValue(currentItem, User.class);
+        if (viewType != ViewTypeEnum.edit) {
+            viewType = ViewTypeEnum.edit;
+        }
     }
 
     public void doDelete() {
-	try {
-	    // Borra el usuario
-	    apiRest.delRestAPI(String.format("%s/del/%s", BEAN_NAME, currentItem.getId()), params);
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "users_delete_ok");
-
-	    // Refresca vista
-	    doRefreshWOFilter();
-	} catch (Exception e) {
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
-	}
+        try {
+            // Borra el usuario
+            if (FactoryRest.getInstance().delRestAPI(String.format("%s/del/%s", BEAN_NAME, currentItem.getId()))) {
+                MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "users_delete_ok");
+            } else {
+                MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
+            }
+            // Refresca vista
+            doRefreshWOFilter();
+        } catch (Exception e) {
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
+        }
     }
 
     public void doEdit() {
-	try {
-	    // Valida las entradas
-	    if (!validateEdit()) {
-		return;
-	    } else {
-		apiRest.putRestAPI(String.format("%s/upd/%s", BEAN_NAME, currentItem.getId()), params, User.class, currentItem);
-		MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "users_update_ok");
-	    }
-	    // Refresca vista
-	    doRefreshWOFilter();
-	} catch (Exception e) {
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
-	}
+        try {
+            // Valida las entradas
+            if (!validateEdit()) {
+                return;
+            } else {
+                FactoryRest.getInstance().putRestAPI(String.format("%s/upd", BEAN_NAME), User.class, currentItem);
+                MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "users_update_ok");
+            }
+            // Refresca vista
+            doRefreshWOFilter();
+        } catch (Exception e) {
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
+        }
 
     }
 
     public void doEditProfile() {
-	try {
-	    if (!validateEditProfile()) {
-		return;
-	    }
+        try {
+            if (!validateEditProfile()) {
+                return;
+            }
 //	    // Modifica el usuario
-	    User userLogged = AuthorizationUtil.getUserSession(FacesContext.getCurrentInstance()).getUser();
-	    userLogged.setPassword(profilePasswd);
+            User userLogged = AuthorizationUtil.getUserSession(FacesContext.getCurrentInstance()).getUser();
+            userLogged.setPassword(profilePasswd);
 
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "users_profile_ok");
-	} catch (Exception e) {
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
-	}
+            MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "users_profile_ok");
+        } catch (Exception e) {
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
+        }
     }
 
     public void doExport() {
-	try {
-	    DataTable dt = (DataTable) FacesContext.getCurrentInstance().getViewRoot().findComponent("form_dt:dataTable");
-	    Exporter exporter = ExporterFactory.getInstance(ExporterFormatEnum.valueOf(exportFormat));
-	    exporter.export(FacesContext.getCurrentInstance(), DataTableExporter.getDataExporter(dt, exportPageOnly), "users");
-	} catch (Exception e) {
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
-	}
+        try {
+            DataTable dt = (DataTable) FacesContext.getCurrentInstance().getViewRoot().findComponent("form_dt:dataTable");
+            Exporter exporter = ExporterFactory.getInstance(ExporterFormatEnum.valueOf(exportFormat));
+            exporter.export(FacesContext.getCurrentInstance(), DataTableExporter.getDataExporter(dt, exportPageOnly), "users");
+        } catch (Exception e) {
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
+        }
     }
 
     public void doOnColumnToggle(ToggleEvent event) {
-	toggleableColumns.set((Integer) event.getData(), event.getVisibility() == Visibility.VISIBLE);
-	RequestContext.getCurrentInstance().execute("fixSearch();");
+        toggleableColumns.set((Integer) event.getData(), event.getVisibility() == Visibility.VISIBLE);
+        RequestContext.getCurrentInstance().execute("fixSearch();");
     }
 
     public void doSecondStepFixSearch() {
@@ -200,184 +188,197 @@ public class UsersFace implements Serializable {
     }
 
     public void doRefresh() {
-	doRefreshWOFilter();
+        doRefreshWOFilter();
     }
 
     public void doRefreshWOFilter() {
-	items = null;
-	currentItem = new User();
-	currentItem.setIdRole(new Role());
-	doSetViewTypeList();
-	profilePasswd = null;
-	profilePasswdConf = null;
+        items = null;
+        currentItem = new User();
+        currentItem.setIdRole(new Role());
+        currentItem.setIdClient(new Client());
+        doSetViewTypeList();
+        profilePasswd = null;
+        profilePasswdConf = null;
     }
 
     public void doSearch() {
-	items = null;
+        items = null;
     }
 
     public void doSetViewTypeList() {
-	viewType = ViewTypeEnum.list;
+        viewType = ViewTypeEnum.list;
     }
 
     public List<SelectItem> getAvailableRoles() {
-	List<SelectItem> result = new ArrayList<>();
-	List<Role> roles = GetClassUtils.castToList(Role.class, apiRest.getListRestAPI("roles/all", params));
-	if (!roles.isEmpty()) {
-	    roles.forEach((role) -> {
-		result.add(new SelectItem(role, role.getName()));
-	    });
-	}
-	return result;
+        List<SelectItem> result = new ArrayList<>();
+        List<Role> roles = (List<Role>) (Object) GetClassUtils.castToList(Role.class, FactoryRest.getInstance().getListRestAPI("roles/all"));
+        if (!roles.isEmpty()) {
+            roles.forEach((role) -> {
+                result.add(new SelectItem(role, role.getName()));
+            });
+        }
+        return result;
+    }
+
+    public List<SelectItem> getAvailableClients() {
+        List<SelectItem> result = new ArrayList<>();
+        List<Client> clients = (List<Client>) (Object) GetClassUtils.castToList(Client.class, FactoryRest.getInstance().getListRestAPI("clients/all"));
+        if (!clients.isEmpty()) {
+            clients.forEach((client) -> {
+                result.add(new SelectItem(client, client.getName(), client.getName()));
+            });
+        }
+        return result;
     }
 
     public User getCurrentItem() {
-	return currentItem;
+        return currentItem;
     }
 
     public boolean getIsItemsFiltered() {
-	return true;
+        return true;
     }
 
     public LazyDataModel<Object> getItems() {
-	if (items == null) {
-	    items = new APILazyDataModel(User.class,
-		    String.format("%s/all", BEAN_NAME), params, BEAN_NAME);
-	}
-	return items;
+        if (items == null) {
+            items = new APILazyDataModel(User.class,
+                    String.format("%s/all", BEAN_NAME), BEAN_NAME);
+        }
+        return items;
     }
 
     public String getProfilePasswd() {
-	return profilePasswd;
+        return profilePasswd;
     }
 
     public String getProfilePasswdConf() {
-	return profilePasswdConf;
+        return profilePasswdConf;
     }
 
     public List<Boolean> getToggleableColumns() {
-	return toggleableColumns;
+        return toggleableColumns;
     }
 
     public ViewTypeEnum getViewType() {
-	return viewType;
+        return viewType;
     }
 
     public void setCurrentItem(User currentItem) {
-	this.currentItem = mapper.convertValue(currentItem, User.class);
+        User u = mapper.convertValue(currentItem, User.class);
+        this.currentItem = u;
     }
 
     public void setExportFormat(String exportFormat) {
-	this.exportFormat = exportFormat;
+        this.exportFormat = exportFormat;
     }
 
     public void setExportPageOnly(boolean exportPageOnly) {
-	this.exportPageOnly = exportPageOnly;
+        this.exportPageOnly = exportPageOnly;
     }
 
     public void setProfilePasswd(String profilePasswd) {
-	this.profilePasswd = profilePasswd;
+        this.profilePasswd = profilePasswd;
     }
 
     public void setProfilePasswdConf(String profilePasswdConf) {
-	this.profilePasswdConf = profilePasswdConf;
+        this.profilePasswdConf = profilePasswdConf;
     }
 
     public void setViewType(ViewTypeEnum viewType) {
-	this.viewType = viewType;
+        this.viewType = viewType;
     }
 
     public List<User> getItemsFiltered() {
-	return itemsFiltered;
+        return itemsFiltered;
     }
 
     public void setItemsFiltered(List<User> itemsFiltered) {
-	this.itemsFiltered = itemsFiltered;
+        this.itemsFiltered = itemsFiltered;
     }
 
     private boolean validateAdd() {
-	boolean correcto = true;
+        boolean correcto = true;
 
-	if (currentItem.getFirstname().trim().length() == 0) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_firstname_empty");
-	} else if (currentItem.getLastname().trim().length() == 0) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_lastname_empty");
-	} else if (currentItem.getEmail().trim().length() == 0) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_email_empty");
-	} else if (!currentItem.getEmail().trim().isEmpty()) {
-	    mather = pattern.matcher(currentItem.getEmail().trim());
-	    if (!mather.find()) {
-		correcto = false;
-		MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_email_error_format");
-	    }
-	} else if (!currentItem.getPassword().equals(currentItem.getPasswordConf())) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_passwd_different");
-	} else if (currentItem.getIdRole().getId() == null || currentItem.getIdRole().getId() <= 0) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_rol_not_select");
-	}
+        if (currentItem.getFirstname().trim().length() == 0) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_firstname_empty");
+        } else if (currentItem.getLastname().trim().length() == 0) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_lastname_empty");
+        } else if (currentItem.getEmail().trim().length() == 0) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_email_empty");
+        } else if (!currentItem.getEmail().trim().isEmpty()) {
+            mather = pattern.matcher(currentItem.getEmail().trim());
+            if (!mather.find()) {
+                correcto = false;
+                MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_email_error_format");
+            }
+        } else if (!currentItem.getPassword().equals(currentItem.getPasswordConf())) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_passwd_different");
+        } else if (currentItem.getIdRole().getId() == null || currentItem.getIdRole().getId() <= 0) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_rol_not_select");
+        }
 
-	if (!correcto) {
-	    FacesContext.getCurrentInstance().validationFailed();
-	}
-	return correcto;
+        if (!correcto) {
+            FacesContext.getCurrentInstance().validationFailed();
+        }
+        return correcto;
     }
 
     private boolean validateEdit() {
-	boolean correcto = true;
+        boolean correcto = true;
 
-	if (currentItem.getFirstname().trim().length() == 0) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_firstname_empty");
-	} else if (currentItem.getLastname().trim().length() == 0) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_lastname_empty");
-	} else if (currentItem.getEmail().trim().length() == 0) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_email_empty");
-	} else if (!currentItem.getEmail().trim().isEmpty()) {
-	    mather = pattern.matcher(currentItem.getEmail().trim());
-	    if (!mather.find()) {
-		correcto = false;
-		MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_email_error_format");
-	    }
-	} else if (StringUtils.isNotBlank(currentItem.getPassword()) && StringUtils.isBlank(currentItem.getPasswordConf())) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_passwdconf_required");
-	} else if (StringUtils.isBlank(currentItem.getPassword()) && StringUtils.isNotBlank(currentItem.getPasswordConf())) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_passwd_required");
-	} else if (StringUtils.isNotBlank(currentItem.getPassword()) && StringUtils.isNotBlank(currentItem.getPasswordConf())
-		&& !currentItem.getPassword().equals(currentItem.getPasswordConf())) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_passwd_different");
-	} else if (currentItem.getIdRole().getId() == null || currentItem.getIdRole().getId() <= 0) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_rol_not_select");
-	}
-	if (!correcto) {
-	    FacesContext.getCurrentInstance().validationFailed();
-	}
+        if (currentItem.getFirstname().trim().length() == 0) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_firstname_empty");
+        } else if (currentItem.getLastname().trim().length() == 0) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_lastname_empty");
+        } else if (currentItem.getEmail().trim().length() == 0) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_email_empty");
+        } else if (!currentItem.getEmail().trim().isEmpty()) {
+            mather = pattern.matcher(currentItem.getEmail().trim());
+            if (!mather.find()) {
+                correcto = false;
+                MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_email_error_format");
+            }
+        } else if (StringUtils.isNotBlank(currentItem.getPassword()) && StringUtils.isBlank(currentItem.getPasswordConf())) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_passwdconf_required");
+        } else if (StringUtils.isBlank(currentItem.getPassword()) && StringUtils.isNotBlank(currentItem.getPasswordConf())) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_passwd_required");
+        } else if (StringUtils.isNotBlank(currentItem.getPassword()) && StringUtils.isNotBlank(currentItem.getPasswordConf())
+                && !currentItem.getPassword().equals(currentItem.getPasswordConf())) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_passwd_different");
+        } else if (currentItem.getIdRole().getId() == null || currentItem.getIdRole().getId() <= 0) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_rol_not_select");
+        }
+        if (!correcto) {
+            FacesContext.getCurrentInstance().validationFailed();
+        }
 
-	return correcto;
+        return correcto;
     }
 
     private boolean validateEditProfile() {
-	boolean correcto = true;
+        boolean correcto = true;
 
-	if (!profilePasswd.equals(profilePasswdConf)) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_passwd_different");
-	}
+        if (!profilePasswd.equals(profilePasswdConf)) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_passwd_different");
+        }
 
-	if (!correcto) {
-	    FacesContext.getCurrentInstance().validationFailed();
-	}
+        if (!correcto) {
+            FacesContext.getCurrentInstance().validationFailed();
+        }
 
-	return correcto;
+        return correcto;
     }
 }

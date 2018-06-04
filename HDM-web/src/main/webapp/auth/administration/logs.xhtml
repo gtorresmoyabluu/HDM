@@ -1,16 +1,214 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <title>TODO supply a title</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    </head>
-    <body>
-        <div>TODO write content</div>
-    </body>
-</html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                template="/WEB-INF/layout/template.xhtml">
+    <ui:define name="topbuttonbar">
+        <p:remoteCommand name="doRefresh" action="#{logViewer.doRefresh}" update=":card"/>
+        <li>
+            <a href="#" onclick="doRefresh();" onfocus="blur();">
+                <i title="#{sessionScope.button_refresh}" class="topbar-icon material-icons">autorenew</i>
+                <span class="topbar-item-name">#{sessionScope.button_refresh}</span>
+            </a>
+        </li>
+    </ui:define>
+    <ui:define name="content">
+        <div class="ui-g">
+            <div class="ui-g-12">
+                <h:panelGroup id="card" layout="block" styleClass="card">
+                    <p:outputPanel id="buttonPanel">
+                        <h:form id="form_bt">
+                            <div style="float:left" class="webTitles">
+                                <h1>
+                                    <h:outputText value="#{sessionScope.logviewer_title}"
+                                                  rendered="#{logViewer.viewType.name =='list'}"/>
+                                    <h:outputText value="#{sessionScope.logviewer_title_search}"
+                                                  rendered="#{logViewer.viewType.name=='search'}"/>
+                                </h1>
+                            </div>
+                            <div align="right">
+                                <p:spacer width="10"/>
+
+                                <p:commandButton id="downloadFile" icon="ui-icon-file-download"
+                                                 title="#{sessionScope.button_download}"
+                                                 action="#{logViewer.doDownload}" ajax="false"/>
+                                <p:spacer width="10"/>
+                                <p:commandButton id="toggler" type="button" style="float:right" icon="ui-icon-grid-on"
+                                                 title="#{sessionScope.button_togglercolumns}" styleClass="showOnDesktop"/>
+                                <p:columnToggler datasource=":form_dt:dataTable" trigger="toggler">
+                                    <p:ajax event="toggle" listener="#{logViewer.doOnColumnToggle}"/>
+                                </p:columnToggler>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{logViewer.viewType.name == 'search'}">
+                        <h:form id="form_ft">
+                            <p:spacer height="10"/>
+                            <p:panelGrid id="filterGrid" columns="3" layout="grid"
+                                         styleClass="ui-panelgrid-blank form-group ui-fluid">   
+                                <h:panelGroup styleClass="md-inputfield ">
+                                    <p:inputText label="#{sessionScope.logviewer_filter_message}"
+                                                 value="#{logViewer.currentFilter.message}"/>
+                                    <label>#{sessionScope.logviewer_filter_message}</label>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <p:selectOneMenu value="#{logViewer.currentFilter.severity}"
+                                                     required="true"
+                                                     requiredMessage="#{sessionScope.logviewer_severity_required}" styleClass="#{logViewer.currentFilter.severity == null ? 'noSelectionItem marLeft5' : 'marLeft5'}">
+                                        <p:ajax event="change" update="@this"/>
+                                        <f:selectItem itemLabel="#{sessionScope.logviewer_filter_severity}" itemValue="#{null}"
+                                                      noSelectionOption="true"/>
+                                        <f:selectItems value="#{logViewer.availableSeverities}"/>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <p:selectOneMenu value="#{logViewer.currentFilter.lines}"
+                                                     required="true"
+                                                     requiredMessage="#{sessionScope.logviewer_lines_required}" styleClass="#{logViewer.currentFilter.lines == null ? 'noSelectionItem marLeft5' : 'marLeft5'}">
+                                        <p:ajax event="change" update="@this"/>
+                                        <f:selectItem itemLabel="#{sessionScope.logviewer_filter_lines}" itemValue="#{null}"
+                                                      noSelectionOption="true"/>
+                                        <f:selectItem itemLabel="30" itemValue="30"/>
+                                        <f:selectItem itemLabel="50" itemValue="50"/>
+                                        <f:selectItem itemLabel="100" itemValue="100"/>
+                                        <f:selectItem itemLabel="200" itemValue="200"/>
+                                        <f:selectItem itemLabel="300" itemValue="300"/>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>                               
+                            </p:panelGrid>   
+                            <p:spacer height="10"/>
+                            <div align="right">
+                                <p:blockUI block="clean" trigger="filter"/>
+                                <p:blockUI block="filter" trigger="clean"/>
+                                <p:commandButton id="filter" value="#{sessionScope.button_search}"
+                                                 update="filterGrid, :form_dt:dataTable"
+                                                 action="#{logViewer.doSearch}"/>
+                                <p:spacer width="10px"/>
+                                <p:commandButton id="clean" value="#{sessionScope.button_clear}"
+                                                 action="#{logViewer.doSearch}"
+                                                 update="filterGrid, :form_dt:dataTable" process="@this"
+                                                 immediate="true">
+                                    <f:setPropertyActionListener value="#{null}" target="#{logViewer.currentFilter}"/>
+                                </p:commandButton>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+                    <p:spacer height="10"/>
+                    <p:outputPanel>
+                        <h:form id="form_dt">
+                            <p:dataTable id="dataTable"
+                                         rowKey="#{item.id}"
+                                         var="item"
+                                         editable="false"
+                                         lazy="true"
+                                         widgetVar="table"
+                                         reflow="true"
+                                         emptyMessage="#{sessionScope.table_empty}"
+                                         value="#{logViewer.items}"
+                                         selection="#{logViewer.currentItem}"
+                                         selectionMode="single"
+                                         rowHover="true"
+                                         paginator="true"
+                                         rows="10"
+                                         paginatorPosition="bottom"
+                                         currentPageReportTemplate="(#{sessionScope.table_records}: {startRecord} - {endRecord} #{sessionScope.table_of} {totalRecords}, #{sessionScope.table_page} {currentPage} #{sessionScope.table_of} {totalPages})"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15,20,50">
+                                <f:facet name="header">
+                                    <h:outputText value="#{sessionScope.logviewer_table_title}"/>
+                                </f:facet>
+                                <p:column
+                                    sortBy="#{item.severity}"
+                                    style="width: 90px;"
+                                    visible="#{logViewer.toggleableColumns[0]}"
+                                    exportable="#{logViewer.toggleableColumns[0]}"
+                                    filterBy="#{item.severity}"
+                                    filterMatchMode="contains"
+                                    headerText="#{sessionScope.logviewer_table_severity}">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.logviewer_table_severity}"/>
+                                    </f:facet>
+                                    <h:panelGroup layout="block" rendered="#{item.severity eq 'INFO'}"
+                                                  styleClass="alignCenter">
+                                        <i class="material-icons" title="INFO">info_outline</i>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{item.severity eq 'WARN'}"
+                                                  styleClass="alignCenter">
+                                        <i class="material-icons" title="WARN">warning</i>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{(item.severity eq 'FATAL' or item.severity eq 'ERROR') and !item.isTrace}"
+                                                  styleClass="alignCenter">
+                                        <i class="material-icons"  title="ERROR">error</i>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{(item.severity eq 'FATAL' or item.severity eq 'ERROR')  and item.isTrace}"
+                                                  styleClass="alignCenter">
+                                        <p:commandButton title="#{sessionScope.logviewer_trace_view}"
+                                                         icon="ui-icon ui-icon-cancel"
+                                                         immediate="true"
+                                                         oncomplete="PF('trace_mp').show();">
+                                            <f:setPropertyActionListener value="#{item}"
+                                                                         target="#{logViewer.currentItem}"/>
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                </p:column>
+                                <p:column visible="#{logViewer.toggleableColumns[1]}"
+                                          exportable="#{logViewer.toggleableColumns[1]}"
+                                          style="width: 155px;">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.logviewer_table_timestamp}"/>
+                                    </f:facet>
+
+                                    <h:outputText value="#{item.timestampToString}">
+                                        <f:convertDateTime type="both" pattern="yyyy-MM-dd HH:mm"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column visible="#{logViewer.toggleableColumns[2]}"
+                                          exportable="#{logViewer.toggleableColumns[2]}"
+                                          style="width: 200px;">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.logviewer_table_class}"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.clazz}" title="#{item.clazz}"/>
+                                </p:column>
+                                <p:column
+                                    sortBy="#{item.message}"
+                                    visible="#{logViewer.toggleableColumns[3]}"
+                                    exportable="#{logViewer.toggleableColumns[3]}"
+                                    filterBy="#{item.message}"
+                                    filterMatchMode="contains"
+                                    headerText="#{sessionScope.logviewer_table_message}">
+                                    <h:outputText value="#{item.message}" />
+                                </p:column>
+                                <p:column
+                                    sortBy="#{item.tipoLog}"
+                                    visible="#{logViewer.toggleableColumns[4]}"
+                                    exportable="#{logViewer.toggleableColumns[4]}"
+                                    filterBy="#{item.tipoLog}"
+                                    filterMatchMode="contains"
+                                    headerText="#{sessionScope.logviewer_table_message}">
+                                    <h:outputText value="#{item.tipoLog}" />
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </p:outputPanel>
+                    <p:dialog id="trace_mpId" widgetVar="trace_mp"
+                              header="#{sessionScope.logviewer_trace_mp_title}"
+                              modal="true" closable="true" resizable="false"
+                              width="800" height="400">
+                        <p:outputPanel autoUpdate="true">
+                            <h:outputText value="#{logViewer.currentItem.message}"
+                                          styleClass="fontSize10" escape="false"/>
+                        </p:outputPanel>
+                        <p:spacer height="10"/>
+                        <div align="center">
+                            <p:commandButton value="#{sessionScope.button_accept}"
+                                             onclick="PF('trace_mp').hide();" type="button"/>
+                        </div>
+                        <p:spacer height="10"/>
+                    </p:dialog>
+                </h:panelGroup>
+            </div>
+        </div>
+    </ui:define>
+</ui:composition>

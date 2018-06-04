@@ -1,7 +1,7 @@
 package com.bluu.hdm.web.filter;
 
 import com.bluu.hdm.web.face.MenuFace;
-import com.bluu.hdm.web.pojo.Access;
+import com.bluu.hdm.web.pojo.administracion.Access;
 import com.bluu.hdm.web.util.AuthorizationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -116,7 +116,6 @@ public class AuthorizationFilter implements Filter {
 	    // Entrega la solicitud al filtro siguiente
 	    chain.doFilter(request, response);
 	} catch (final IOException | ServletException t) {
-	    t.printStackTrace();
 	    logger.error(null, t);
 	}
     }

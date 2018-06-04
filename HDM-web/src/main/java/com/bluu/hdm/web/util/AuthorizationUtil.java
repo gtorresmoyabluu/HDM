@@ -1,20 +1,25 @@
 package com.bluu.hdm.web.util;
 
 import com.bluu.hdm.web.pojo.Message;
-import com.bluu.hdm.web.pojo.User;
+import com.bluu.hdm.web.pojo.OAuthToken;
+import com.bluu.hdm.web.pojo.administracion.User;
 import com.bluu.hdm.web.pojo.UserSession;
+import com.bluu.hdm.web.rest.ConsumeREST;
+import com.bluu.hdm.web.rest.FactoryRest;
 import com.bluu.hdm.web.rest.IConsumeREST;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.ws.rs.core.MultivaluedMap;
 
 public abstract class AuthorizationUtil {
+    private static IConsumeREST apiRest;
 
     private static String USER_FACES_SESSION = "USER_FACES_SESSION";
+    private static String OAUTH_FACES_SESSION = "OAUTH_FACES_SESSION";
 
     /**
      * Metodo para login
@@ -36,6 +41,7 @@ public abstract class AuthorizationUtil {
 	if (!session.isNew()) {
 	    try {
 		session.removeAttribute(USER_FACES_SESSION);
+		session.removeAttribute(OAUTH_FACES_SESSION);
 		session.invalidate();
 	    } catch (final Throwable ignore) {
 	    }
@@ -53,7 +59,7 @@ public abstract class AuthorizationUtil {
     }
 
     /**
-     * Método para objeter el usuario en sesión
+     * Método para obtener el usuario en sesión
      *
      * @param request
      * @param session
@@ -64,7 +70,7 @@ public abstract class AuthorizationUtil {
     }
 
     /**
-     * Método para objeter el usuario en sesión
+     * Método para obtener el usuario en sesión
      *
      * @param facesContext
      * @return
@@ -104,20 +110,24 @@ public abstract class AuthorizationUtil {
 	((HttpSession) facesContext.getExternalContext().getSession(false)).setAttribute(USER_FACES_SESSION, user);
     }
 
-    public static void doRefreshAll(ObjectMapper mapper, IConsumeREST apiRest, MultivaluedMap params) {
+    public static void doRefreshAll(ObjectMapper mapper) {
 	String locate = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
-	List<Message> messages = mapper.convertValue(
-		apiRest.getListRestAPI(String.format("messages/messages/%s", locate), params),
-		new TypeReference<List<Message>>() {
-	}
-	);
+	List<Message> messages = (List<Message>)(Object) GetClassUtils.castToList(Message.class, FactoryRest.getInstance().getListRestAPI(String.format("messages/messages/%s", locate)));
 	if (!messages.isEmpty()) {
 	    messages.forEach((m) -> {
-		if (FacesContext.getCurrentInstance().getExternalContext().getSessionMap().containsKey(m.getCode())) {
+                if (FacesContext.getCurrentInstance().getExternalContext().getSessionMap().containsKey(m.getCode())) {
 		    FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put(m.getCode(), null);
 		}
 		FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put(m.getCode(), m.getDescription());
 	    });
 	}
+    }
+    
+    public static void setTokenSession(FacesContext facesContext, OAuthToken token) {
+        ((HttpSession) facesContext.getExternalContext().getSession(false)).setAttribute(OAUTH_FACES_SESSION, token);
+    }
+    
+    public static OAuthToken getTokenSession(FacesContext facesContext){
+        return (OAuthToken) ((HttpSession) facesContext.getExternalContext().getSession(false)).getAttribute(OAUTH_FACES_SESSION);
     }
 }

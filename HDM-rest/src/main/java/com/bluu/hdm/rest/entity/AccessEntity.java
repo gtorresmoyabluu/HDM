@@ -29,7 +29,6 @@ import javax.validation.constraints.Size;
  */
 @Entity
 @Table(name = "access")
-
 @NamedStoredProcedureQueries({
     @NamedStoredProcedureQuery(
 	    name = "getParents",

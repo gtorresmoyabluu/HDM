@@ -1,0 +1,243 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    template="/WEB-INF/layout/template.xhtml">
+    <ui:define name="topbuttonbar">
+        <p:remoteCommand name="doRefresh" action="#{models.doRefresh}" update=":card" />
+        <p:remoteCommand name="fixSearch" action="#{models.doSecondStepFixSearch()}" update=":form_dt:dataTable"/>
+        <li>
+            <a href="#" onclick="doRefresh();" onfocus="blur();">
+                <i title="#{sessionScope.button_refresh}" class="topbar-icon material-icons">autorenew</i>
+                <span class="topbar-item-name">#{sessionScope.button_refresh}</span>
+            </a>
+        </li>
+    </ui:define>
+    <ui:define name="content">
+        <div class="ui-g">
+            <div class="ui-g-12">
+                <h:panelGroup id="card" layout="block" styleClass="card">
+                    <!-- Buttons -->
+                    <p:outputPanel id="buttonPanel">
+                        <h:form id="form_bt">
+                            <div style="float: left" class="webTitles">
+                                <h1>
+                                    <h:outputText value="#{sessionScope.model_title}" rendered="#{models.viewType.name == 'list'}" />
+                                    <h:outputText value="#{sessionScope.model_title_detail}" rendered="#{models.viewType.name == 'detail'}" />
+                                    <h:outputText value="#{sessionScope.model_title_edit}" rendered="#{models.viewType.name == 'edit'}" />
+                                    <h:outputText value="#{sessionScope.model_title_add}" rendered="#{models.viewType.name == 'add'}" />
+                                </h1>
+                            </div>
+                            <div align="right">
+                                <p:commandButton icon="ui-icon-playlist-add"
+                                                 styleClass="#{models.viewType.name == 'add' ? 'active' : ''}"
+                                                 title="#{sessionScope.model_title_add}" update=":card" action="#{models.doChangeAdd}"
+                                                 immediate="true" />
+                                <p:spacer width="10" />
+                                <p:commandButton id="dynaButton" icon="ui-icon-file-download" title="#{sessionScope.button_export}" />
+                                <p:menu overlay="true" trigger="dynaButton" my="left top" at="left bottom">
+                                    <p:menuitem value="#{sessionScope.table_export_all}" action="#{models.doExport}" ajax="false">
+                                        <f:setPropertyActionListener value="false" target="#{models.exportPageOnly}" />
+                                        <f:setPropertyActionListener value="csv" target="#{models.exportFormat}" />
+                                    </p:menuitem>
+                                    <p:menuitem value="#{sessionScope.table_export_current}" action="#{models.doExport}" ajax="false">
+                                        <f:setPropertyActionListener value="true" target="#{models.exportPageOnly}" />
+                                        <f:setPropertyActionListener value="csv" target="#{models.exportFormat}" />
+                                    </p:menuitem>
+                                </p:menu>
+                                <p:spacer width="10" />
+                                <p:commandButton id="toggler" type="button" style="float:right" icon="ui-icon-grid-on"
+                                                 title="#{sessionScope.button_togglercolumns}" styleClass="showOnDesktop" />
+                                <p:columnToggler datasource=":form_dt:dataTable" trigger="toggler">
+                                    <p:ajax event="toggle" listener="#{models.doOnColumnToggle}" />
+                                </p:columnToggler>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+                    <!-- Detail Client -->
+                    <p:outputPanel rendered="#{models.viewType.name == 'detail'}">
+                        <p:focus/>
+                        <p:spacer height="10" />
+                        <p:panelGrid columns="4" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid compact">
+
+                            <p:selectOneMenu id="manufacturerAdd"
+                                             value="#{models.currentItem.manufacturer}"
+                                             required="true"
+                                             converter="pojoConverter"
+                                             requiredMessage="#{sessionScope.users_role_required}"
+                                             styleClass="#{models.currentItem.manufacturer == null ? 'noSelectionItem' : ''}"
+                                             disabled="disabled">
+                                <f:selectItem itemLabel="#{sessionScope.model_manufacturer}" itemValue="" noSelectionOption="true" />
+                                <f:selectItems value="#{models.availableManufactures}" var="man" itemLabel="#{man.name}" itemValue="#{man}"/>
+                                <p:ajax event="change" update="@this"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel for="nameDetail" value="#{sessionScope.client_client}:" styleClass="itemLabel" />
+                            <h:outputText id="nameDetail" value="#{models.currentItem.name}" />
+                        </p:panelGrid>
+                        <p:spacer height="10" />
+                        <div align="right">
+                            <p:blockUI block="processCancelDetail" trigger="processCancelDetail" />
+                            <p:commandButton id="processCancelDetail" value="#{sessionScope.button_cancel}" update=":card"
+                                             action="#{models.doSetViewTypeList}" styleClass="ui-priority-primary" style="margin-bottom:10px"
+                                             oncomplete="PF('table').unselectAllRows()" />
+                        </div>
+                    </p:outputPanel>
+                    <!-- Add Client -->
+                    <p:outputPanel rendered="#{models.viewType.name == 'add'}">
+                        <h:form id="form_at">
+                            <p:spacer height="10" />
+                            <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                                <p:selectOneMenu id="manufacturerAdd"
+                                                 value="#{models.currentItem.manufacturer}"
+                                                 required="true"
+                                                 converter="pojoConverter"
+                                                 requiredMessage="#{sessionScope.users_role_required}"
+                                                 styleClass="#{models.currentItem.manufacturer == null ? 'noSelectionItem' : ''}">
+                                    <f:selectItem itemLabel="#{sessionScope.model_manufacturer}" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{models.availableManufactures}" var="man" itemLabel="#{man.name}" itemValue="#{man}"/>
+                                    <p:ajax event="change" update="@this"/>
+                                </p:selectOneMenu>
+                                <h:panelGroup styleClass="md-inputfield ">
+                                    <p:inputText id="nameAdd" label="#{sessionScope.model_model}"
+                                                 value="#{models.currentItem.name}" required="true"
+                                                 requiredMessage="#{sessionScope.model_model_required}" validator="notEmptyValidator"
+                                                 validatorMessage="#{sessionScope.model_model_required}" maxlength="64" />
+                                    <label>#{sessionScope.model_model}</label>
+                                </h:panelGroup>
+                            </p:panelGrid>
+                            <p:spacer height="10" />
+                            <div align="right">
+                                <p:blockUI block="processAdd" trigger="processAdd" />
+                                <p:blockUI block="processCancelAdd" trigger="processCancelAdd" />
+                                <p:commandButton id="processAdd" value="#{sessionScope.button_save}" update=":card"
+                                                 action="#{models.doAdd}" styleClass="ui-priority-primary" style="margin-bottom:10px" />
+                                <p:spacer width="5" />
+                                <p:commandButton id="processCancelAdd" value="#{sessionScope.button_cancel}"
+                                                 action="#{models.doSetViewTypeList}" immediate="true" update=":card" process="@this"
+                                                 styleClass="ui-priority-primary" style="margin-bottom:10px">
+                                    <p:resetInput target="@form" />
+                                </p:commandButton>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+                    <!-- Edit Client -->
+                    <p:outputPanel rendered="#{models.viewType.name == 'edit'}">
+                        <h:form id="form_et">
+                            <p:spacer height="10" />
+                            <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank form-group ui-fluid">
+                                <p:selectOneMenu id="manufacturerEdit"
+                                                 value="#{models.currentItem.manufacturer}"
+                                                 required="true"
+                                                 converter="pojoConverter"
+                                                 requiredMessage="#{sessionScope.users_role_required}"
+                                                 styleClass="#{models.currentItem.manufacturer == null ? 'noSelectionItem' : ''}">
+                                    <f:selectItem itemLabel="#{sessionScope.model_manufacturer}" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{models.availableManufactures}" var="man" itemLabel="#{man.name}" itemValue="#{man}"/>
+                                    <p:ajax event="change" update="@this"/>
+                                </p:selectOneMenu>
+                                <h:panelGroup styleClass="md-inputfield">
+                                    <p:inputText id="nameEdit" label="#{sessionScope.model_model}"
+                                                 value="#{models.currentItem.name}" required="true"
+                                                 requiredMessage="#{sessionScope.model_model_required}" validator="notEmptyValidator"
+                                                 validatorMessage="#{sessionScope.model_model_required}" maxlength="64" />
+                                    <label>#{sessionScope.model_model}</label>
+                                </h:panelGroup>
+                            </p:panelGrid>
+                            <p:spacer height="10" />
+                            <div align="right">
+                                <p:blockUI block="processEdit" trigger="processEdit" />
+                                <p:blockUI block="processCancelEdit" trigger="processCancelEdit" />
+                                <p:commandButton id="processEdit" value="#{sessionScope.button_save}" action="#{models.doEdit}"
+                                                 update=":card" styleClass="ui-priority-primary" style="margin-bottom:10px" />
+                                <p:spacer width="5" />
+                                <p:commandButton id="processCancelEdit" value="#{sessionScope.button_cancel}"
+                                                 action="#{models.doSetViewTypeList}" immediate="true" update=":card" process="@this"
+                                                 styleClass="ui-priority-primary" style="margin-bottom:10px">
+                                    <p:resetInput target="@form" />
+                                </p:commandButton>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+                    <p:spacer height="10" />
+                    <!-- Table Client -->
+                    <p:outputPanel>
+                        <h:form id="form_dt">
+                            <p:dataTable
+                                id="dataTable"
+                                rowKey="#{item.id}"
+                                var="item"
+                                editable="false"
+                                lazy="true"
+                                widgetVar="table"
+                                reflow="true"
+                                emptyMessage="#{sessionScope.table_empty}"
+                                value="#{models.items}"
+                                selectionMode="single"
+                                rowHover="true"
+                                paginator="true"
+                                rows="10"
+                                paginatorPosition="bottom"
+                                currentPageReportTemplate="(#{sessionScope.table_records}: {startRecord} - {endRecord} #{sessionScope.table_of} {totalRecords}, #{sessionScope.table_page} {currentPage} #{sessionScope.table_of} {totalPages})"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,20,50">
+
+                                <f:facet name="header">
+                                    <h:outputText value="#{sessionScope.model_table_title}" />
+<!--                                    <h:panelGroup layout="block" rendered="#{models.isItemsFiltered}">
+                                        <i class="material-icons table-filter-icon">search</i>
+                                    </h:panelGroup>-->
+                                </f:facet>
+
+                                <p:ajax event="rowSelect" listener="#{models.doChangeDetail}" oncomplete="window.scrollTo(0,0);" update=":card" />
+                                <p:ajax event="rowUnselect" listener="#{models.doSetViewTypeList}" update=":card" />
+                                <!--cabecera-->
+                                <p:column
+                                    sortBy="#{item.name}"
+                                    visible="#{models.toggleableColumns[0]}"
+                                    exportable="#{models.toggleableColumns[0]}"
+                                    filterBy="#{item.name}"
+                                    filterMatchMode="contains"
+                                    headerText="#{sessionScope.model_table_manufacturer}">
+                                    <h:outputText value="#{item.manufacturer.name}"/>
+                                </p:column>
+                                <p:column
+                                    sortBy="#{item.name}"
+                                    visible="#{models.toggleableColumns[1]}"
+                                    exportable="#{models.toggleableColumns[1]}"
+                                    filterBy="#{item.name}"
+                                    filterMatchMode="contains"
+                                    headerText="#{sessionScope.model_table_model}">
+                                    <h:outputText value="#{item.name}"/>
+                                </p:column>
+                                <p:column exportable="false" toggleable="false" width="73px;" >
+                                    <p:commandButton icon="ui-icon ui-icon-edit"
+                                                     styleClass="#{models.currentItem.id == item.id and models.viewType.name == 'edit' ? 'active' : ''}"
+                                                     update=":card" title="#{sessionScope.button_edit}" action="#{models.doChangeEdit}"
+                                                     immediate="true" oncomplete="PF('table').unselectAllRows(); window.scrollTo(0,0);">
+                                        <f:setPropertyActionListener value="#{item}" target="#{models.currentItem}" />
+                                    </p:commandButton>
+                                    <p:spacer width="5" />
+                                    <p:commandButton icon="ui-icon ui-icon-trash" title="#{sessionScope.button_delete}"
+                                                     oncomplete="PF('confirmDelete').show();" actionListener="#{models.setCurrentItem(item)}"
+                                                     immediate="true" disabled="#{item.id == sessionFace.userLogged.idClient.id}" />
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </p:outputPanel>
+                    <p:confirmDialog id="confirmDialog" message="#{sessionScope.disclaimer_delete}"
+                                     header="#{sessionScope.header_warning}" severity="alert" widgetVar="confirmDelete">
+                        <p:blockUI block="delete" trigger="delete" />
+                        <p:blockUI block="cancelDelete" trigger="delete" />
+
+                        <p:commandButton id="delete" value="#{sessionScope.button_accept}" action="#{models.doDelete}"
+                                         update=":form_dt:dataTable" oncomplete="PF('confirmDelete').hide();" />
+                        <p:commandButton value="#{sessionScope.button_cancel}" id="cancelDelete"
+                                         onclick="PF('confirmDelete').hide();" type="button" />
+                    </p:confirmDialog>
+                </h:panelGroup>
+            </div>
+        </div>
+    </ui:define>
+</ui:composition>

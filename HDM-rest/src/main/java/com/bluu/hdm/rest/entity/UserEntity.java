@@ -7,6 +7,7 @@ package com.bluu.hdm.rest.entity;
 
 import com.bluu.hdm.rest.util.CustomDateDeserializer;
 import com.bluu.hdm.rest.util.CustomDateSerializer;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.io.Serializable;
@@ -57,23 +58,28 @@ public class UserEntity implements Serializable {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Size(max = 255)
+    @Column(name = "backupPswd", nullable = false)
+    private String backupPswd;
+
+    @JsonIgnore
     @Column(name = "creation_date")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date creationDate;
 
-    @Column(name = "high_date")
-    @Temporal(TemporalType.DATE)
+    @Column(name = "last_login")
+    @Temporal(TemporalType.TIMESTAMP)
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
-    private Date highDate;
+    private Date lastLogin;
 
-    @Column(name = "low_date")
-    @Temporal(TemporalType.DATE)
+    @Column(name = "last_modification")
+    @Temporal(TemporalType.TIMESTAMP)
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
-    private Date lowDate;
+    private Date lastModification;
 
     @Column(name = "active")
     private int active;
@@ -82,113 +88,135 @@ public class UserEntity implements Serializable {
     @ManyToOne
     private RoleEntity idRole;
 
+    @JoinColumn(name = "id_client", referencedColumnName = "id", nullable = true)
+    @ManyToOne
+    private ClientEntity idClient;
+
     public UserEntity() {
     }
 
     public UserEntity(UserEntity users) {
-	this.active = users.active;
-	this.email = users.email;
-	this.id = users.id;
-	this.lastname = users.lastname;
-	this.firstname = users.firstname;
-	this.password = users.password;
-	this.idRole = users.idRole;
+        this.active = users.active;
+        this.email = users.email;
+        this.id = users.id;
+        this.lastname = users.lastname;
+        this.firstname = users.firstname;
+        this.password = users.password;
+        this.backupPswd = users.backupPswd;
+        this.idRole = users.idRole;
+        this.idClient = users.idClient;
     }
 
     public UserEntity(long id) {
-	this.id = id;
+        this.id = id;
     }
 
     public long getId() {
-	return id;
+        return id;
     }
 
     public void setId(long id) {
-	this.id = id;
+        this.id = id;
     }
 
     public void setUsername(String username) {
-	this.username = username;
+        this.username = username;
     }
 
     public void setPassword(String password) {
-	this.password = password;
+        this.password = password;
     }
 
     public String getFirstname() {
-	return firstname;
+        return firstname;
     }
 
     public void setFirstname(String firstname) {
-	this.firstname = firstname;
+        this.firstname = firstname;
     }
 
     public Date getCreationDate() {
-	return creationDate;
+        return creationDate;
     }
 
     public void setCreationDate(Date creationDate) {
-	this.creationDate = creationDate;
-    }
-
-    public Date getHighDate() {
-	return highDate;
-    }
-
-    public void setHighDate(Date highDate) {
-	this.highDate = highDate;
-    }
-
-    public Date getLowDate() {
-	return lowDate;
-    }
-
-    public void setLowDate(Date lowDate) {
-	this.lowDate = lowDate;
+        this.creationDate = creationDate;
     }
 
     public RoleEntity getIdRole() {
-	return idRole;
+        return idRole;
     }
 
     public void setIdRole(RoleEntity idRole) {
-	this.idRole = idRole;
+        this.idRole = idRole;
     }
 
     public String getEmail() {
-	return email;
+        return email;
     }
 
     public void setEmail(String email) {
-	this.email = email;
+        this.email = email;
     }
 
     public String getUsername() {
-	return username;
+        return username;
     }
 
     public String getPassword() {
-	return password;
+        return password;
     }
 
     public String getLastname() {
-	return lastname;
+        return lastname;
     }
 
     public void setLastname(String lastname) {
-	this.lastname = lastname;
+        this.lastname = lastname;
     }
 
     public int getActive() {
-	return active;
+        return active;
     }
 
     public void setActive(int active) {
-	this.active = active;
+        this.active = active;
+    }
+
+    public Date getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(Date lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
+    public Date getLastModification() {
+        return lastModification;
+    }
+
+    public void setLastModification(Date lastModification) {
+        this.lastModification = lastModification;
+    }
+
+    public ClientEntity getIdClient() {
+        return idClient;
+    }
+
+    public void setIdClient(ClientEntity idClient) {
+        this.idClient = idClient;
+    }
+
+    public String getBackupPswd() {
+        return backupPswd;
+    }
+
+    public void setBackupPswd(String backupPswd) {
+        this.backupPswd = backupPswd;
     }
 
     @Override
     public String toString() {
-	return "com.bluu.hdm.rest.entity.UserEntity[ id=" + id + " ]";
+        return "com.bluu.hdm.rest.entity.UserEntity[ id=" + id + " ]";
     }
 }

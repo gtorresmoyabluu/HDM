@@ -7,12 +7,13 @@ package com.bluu.hdm.rest.entity;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -46,6 +47,9 @@ public class LicenseEntity implements Serializable {
     @Size(max = 255)
     @Column(name = "version")
     private String version;
+    
+    @Column(name = "cpeThreshold")
+    private Long cpeThreshold;
 
     @Size(max = 255)
     @Column(name = "asociated_ip")
@@ -56,7 +60,11 @@ public class LicenseEntity implements Serializable {
     private Date expirationDate;
 
     @Column(nullable = false)
-    private boolean blocked = false;
+    private Boolean blocked = false;
+    
+    @JoinColumn(name = "id_client", referencedColumnName = "id", nullable = false)
+    @OneToOne
+    private ClientEntity idClient;
 
     public LicenseEntity() {
     }
@@ -121,6 +129,30 @@ public class LicenseEntity implements Serializable {
 	this.expirationDate = expirationDate;
     }
 
+    public ClientEntity getIdClient() {
+        return idClient;
+    }
+
+    public void setIdClient(ClientEntity idClient) {
+        this.idClient = idClient;
+    }
+
+    public Long getCpeThreshold() {
+        return cpeThreshold;
+    }
+
+    public void setCpeThreshold(Long cpeThreshold) {
+        this.cpeThreshold = cpeThreshold;
+    }
+
+    public Boolean getBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(Boolean blocked) {
+        this.blocked = blocked;
+    }
+
     @Override
     public int hashCode() {
 	int hash = 0;
@@ -135,10 +167,7 @@ public class LicenseEntity implements Serializable {
 	    return false;
 	}
 	LicenseEntity other = (LicenseEntity) object;
-	if ((this.code == null && other.code != null) || (this.code != null && !this.code.equals(other.code))) {
-	    return false;
-	}
-	return true;
+	return !((this.code == null && other.code != null) || (this.code != null && !this.code.equals(other.code)));
     }
 
     @Override

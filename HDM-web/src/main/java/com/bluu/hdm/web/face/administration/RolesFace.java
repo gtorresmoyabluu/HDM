@@ -6,16 +6,13 @@ import com.bluu.hdm.web.exporter.DataTableExporter;
 import com.bluu.hdm.web.exporter.Exporter;
 import com.bluu.hdm.web.exporter.ExporterFactory;
 import com.bluu.hdm.web.model.APILazyDataModel;
-import com.bluu.hdm.web.pojo.Access;
-import com.bluu.hdm.web.pojo.Role;
-import com.bluu.hdm.web.pojo.User;
-import com.bluu.hdm.web.rest.ConsumeREST;
-import com.bluu.hdm.web.rest.IConsumeREST;
-import com.bluu.hdm.web.util.AuthorizationUtil;
+import com.bluu.hdm.web.pojo.administracion.Access;
+import com.bluu.hdm.web.pojo.administracion.Role;
+import com.bluu.hdm.web.pojo.administracion.User;
+import com.bluu.hdm.web.rest.FactoryRest;
 import com.bluu.hdm.web.util.GetClassUtils;
 import com.bluu.hdm.web.util.MessageUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +21,6 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import javax.ws.rs.core.MultivaluedMap;
 import org.apache.log4j.Logger;
 import org.primefaces.component.datatable.DataTable;
 import org.primefaces.context.RequestContext;
@@ -45,9 +41,6 @@ public class RolesFace implements Serializable {
     private Logger logger;
 
     private ObjectMapper mapper;
-    private IConsumeREST apiRest;
-    private MultivaluedMap params;
-    private User userSession;
 
     private String exportFormat;
     private boolean exportPageOnly;
@@ -69,171 +62,161 @@ public class RolesFace implements Serializable {
 
     @PostConstruct
     public void init() {
-	if (mapper == null) {
-	    mapper = new ObjectMapper();
-	}
-	if (apiRest == null) {
-	    apiRest = new ConsumeREST();
-	}
-	if (userSession == null && AuthorizationUtil.getUserSession(FacesContext.getCurrentInstance()).getUser() != null) {
-	    userSession = AuthorizationUtil.getUserSession(FacesContext.getCurrentInstance()).getUser();
-	}
-	if (params == null) {
-	    params = new MultivaluedMapImpl();
-	}
-	if (!params.containsKey("access_token")) {
-	    params.add("access_token", userSession.getToken().getAccess_token());
-	}
-
-	doRefresh();
-	toggleableColumns = Arrays.asList(true, true, false);
+        if (mapper == null) {
+            mapper = new ObjectMapper();
+        }
+        doRefresh();
+        toggleableColumns = Arrays.asList(true, true, false);
     }
 
     public void doRefresh() {
-	doRefreshWOFilter();
-	treeNodeExpandCollapse = true;
+        doRefreshWOFilter();
+        treeNodeExpandCollapse = true;
     }
 
     public void doRefreshWOFilter() {
-	items = null;
-	currentItem = new Role();
-	showtable = false;
-	doSetViewTypeList();
+        items = null;
+        currentItem = new Role();
+        showtable = false;
+        doSetViewTypeList();
     }
 
     public void doSetViewTypeList() {
-	viewType = ViewTypeEnum.list;
-	showtable = !showtable;
+        viewType = ViewTypeEnum.list;
+        showtable = !showtable;
     }
 
     public void doChangeAdd() {
-	if (viewType != ViewTypeEnum.add) {
-	    currentItem = new Role();
-	    viewType = ViewTypeEnum.add;
-	} else {
-	    viewType = ViewTypeEnum.list;
-	}
+        if (viewType != ViewTypeEnum.add) {
+            currentItem = new Role();
+            viewType = ViewTypeEnum.add;
+        } else {
+            viewType = ViewTypeEnum.list;
+        }
     }
 
     public void doChangeDetail(SelectEvent event) {
-	currentItem = new Role();
-	if (event.getObject() != null) {
-	    currentItem = mapper.convertValue(event.getObject(), Role.class);
-	}
-	if (viewType != ViewTypeEnum.detail) {
-	    viewType = ViewTypeEnum.detail;
-	}
+        currentItem = new Role();
+        if (event.getObject() != null) {
+            currentItem = mapper.convertValue(event.getObject(), Role.class);
+        }
+        if (viewType != ViewTypeEnum.detail) {
+            viewType = ViewTypeEnum.detail;
+        }
     }
 
     public void doChangeEdit() {
-	// Realiza un clonado profundo del objeto
-	currentItem = mapper.convertValue(currentItem, Role.class);
-	if (viewType != ViewTypeEnum.edit) {
-	    viewType = ViewTypeEnum.edit;
-	}
+        // Realiza un clonado profundo del objeto
+        currentItem = mapper.convertValue(currentItem, Role.class);
+        if (viewType != ViewTypeEnum.edit) {
+            viewType = ViewTypeEnum.edit;
+        }
     }
 
     public void doChangeAccess() {
-	// Realiza un clonado profundo del objeto
-	currentItem = mapper.convertValue(currentItem, Role.class);
-	if (viewType != ViewTypeEnum.access) {
-	    viewType = ViewTypeEnum.access;
-	    getAccessTree(currentItem.getId());
-	    showtable = !showtable;
-	}
+        // Realiza un clonado profundo del objeto
+        currentItem = mapper.convertValue(currentItem, Role.class);
+        if (viewType != ViewTypeEnum.access) {
+            viewType = ViewTypeEnum.access;
+            getAccessTree(currentItem.getId());
+            showtable = !showtable;
+        }
     }
 
     //Events
     public void doAdd() {
-	try {
-	    // Valida las entradas
-	    if (!validateAdd()) {
-		return;
-	    } else if (apiRest.getRestAPI(String.format("%s/getRoleName/%s", BEAN_NAME, currentItem.getName().trim()), params) != null) {
-		MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "roles_nameexits");
-		FacesContext.getCurrentInstance().validationFailed();
-	    } else {
-		apiRest.postRestAPI(String.format("%s/add", BEAN_NAME), params, currentItem);
-		MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "roles_creation_success");
-	    }
-	} catch (Exception e) {
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
-	}
-	// Refresca vista
-	doRefreshWOFilter();
+        try {
+            // Valida las entradas
+            if (!validateAdd()) {
+                return;
+            } else if (FactoryRest.getInstance().getRestAPI(String.format("%s/getRoleName/%s", BEAN_NAME, currentItem.getName().trim())) != null) {
+                MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "roles_nameexits");
+                FacesContext.getCurrentInstance().validationFailed();
+            } else {
+                FactoryRest.getInstance().postRestAPI(String.format("%s/add", BEAN_NAME), currentItem);
+                MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "roles_creation_success");
+            }
+        } catch (Exception e) {
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
+        }
+        // Refresca vista
+        doRefreshWOFilter();
     }
 
     private boolean validateAdd() {
-	boolean correcto = true;
+        boolean correcto = true;
 
-	if (currentItem.getName().trim().length() == 0) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "roles_name_empty");
-	}
-	if (!correcto) {
-	    FacesContext.getCurrentInstance().validationFailed();
-	}
-	return correcto;
+        if (currentItem.getName().trim().length() == 0) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "roles_name_empty");
+        }
+        if (!correcto) {
+            FacesContext.getCurrentInstance().validationFailed();
+        }
+        return correcto;
     }
 
     public void doEdit() {
-	try {
-	    // Valida las entradas
-	    if (!validateEdit()) {
-		return;
-	    } else {
-		apiRest.putRestAPI(String.format("%s/upd/%s", BEAN_NAME, currentItem.getId()), params, Role.class, currentItem);
-		MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "roles_edit_success");
-	    }
-	    // Refresca vista
-	    doRefreshWOFilter();
-	} catch (Exception e) {
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
-	}
+        try {
+            // Valida las entradas
+            if (!validateEdit()) {
+                return;
+            } else {
+                FactoryRest.getInstance().putRestAPI(String.format("%s/upd", BEAN_NAME), Role.class, currentItem);
+                MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "roles_edit_success");
+            }
+            // Refresca vista
+            doRefreshWOFilter();
+        } catch (Exception e) {
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
+        }
 
     }
 
     private boolean validateEdit() {
-	boolean correcto = true;
-	if (currentItem.getName().trim().length() == 0) {
-	    correcto = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_firstname_empty");
-	}
-	if (!correcto) {
-	    FacesContext.getCurrentInstance().validationFailed();
-	}
-	return correcto;
+        boolean correcto = true;
+        if (currentItem.getName().trim().length() == 0) {
+            correcto = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "users_firstname_empty");
+        }
+        if (!correcto) {
+            FacesContext.getCurrentInstance().validationFailed();
+        }
+        return correcto;
     }
 
     public void doDelete() {
-	try {
-	    if (!validateRolesForDelete()) {
-		return;
-	    } else {
-		// Borra el usuario
-		apiRest.delRestAPI(String.format("%s/del/%s", BEAN_NAME, currentItem.getId()), params);
-		MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "roles_delete_success", currentItem.getName());
-
-		// Refresca vista
-		doRefreshWOFilter();
-	    }
-	} catch (Exception e) {
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
-	}
+        try {
+            if (!validateRolesForDelete()) {
+                return;
+            } else {
+                // Borra el usuario
+                if (FactoryRest.getInstance().delRestAPI(String.format("%s/del/%s", BEAN_NAME, currentItem.getId()))) {
+                    MessageUtils.addMessage(FacesMessage.SEVERITY_INFO, "roles_delete_success", currentItem.getName());
+                }
+                else{
+                    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
+                }
+                // Refresca vista
+                doRefreshWOFilter();
+            }
+        } catch (Exception e) {
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
+        }
     }
 
     //Validations
     private boolean validateRolesForDelete() {
-	boolean validate = true;
-	List<User> userByRol = apiRest.getListRestAPI(String.format("%s/users/%s", BEAN_NAME, currentItem.getId()), params);
-	//comprueba si el rol esta asignado a algún usuario
-	if (userByRol == null) {
-	    return validate;
-	} else if (userByRol.size() > 0) {
-	    validate = false;
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "roles_delete_fail_roleused", currentItem.getName());
-	}
-	return validate;
+        boolean validate = true;
+        List<User> userByRol = (List<User>) (Object) GetClassUtils.castToList(User.class, FactoryRest.getInstance().getListRestAPI(String.format("%s/users/%s", BEAN_NAME, currentItem.getId())));
+        //comprueba si el rol esta asignado a algún usuario
+        if (userByRol == null) {
+            return validate;
+        } else if (userByRol.size() > 0) {
+            validate = false;
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "roles_delete_fail_roleused", currentItem.getName());
+        }
+        return validate;
     }
 
     public void doSecondStepFixSearch() {
@@ -241,147 +224,147 @@ public class RolesFace implements Serializable {
     }
 
     public void doExport() {
-	try {
-	    DataTable dt = (DataTable) FacesContext.getCurrentInstance().getViewRoot().findComponent("form_dt:dataTable");
-	    Exporter exporter = ExporterFactory.getInstance(ExporterFormatEnum.valueOf(exportFormat));
-	    exporter.export(FacesContext.getCurrentInstance(), DataTableExporter.getDataExporter(dt, exportPageOnly), "roles");
-	} catch (Exception e) {
-	    MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
-	}
+        try {
+            DataTable dt = (DataTable) FacesContext.getCurrentInstance().getViewRoot().findComponent("form_dt:dataTable");
+            Exporter exporter = ExporterFactory.getInstance(ExporterFormatEnum.valueOf(exportFormat));
+            exporter.export(FacesContext.getCurrentInstance(), DataTableExporter.getDataExporter(dt, exportPageOnly), "roles");
+        } catch (Exception e) {
+            MessageUtils.addMessage(FacesMessage.SEVERITY_ERROR, "general_operationerror");
+        }
     }
 
     public void doOnColumnToggle(ToggleEvent event) {
-	toggleableColumns.set((Integer) event.getData(), event.getVisibility() == Visibility.VISIBLE);
-	RequestContext.getCurrentInstance().execute("fixSearch();");
+        toggleableColumns.set((Integer) event.getData(), event.getVisibility() == Visibility.VISIBLE);
+        RequestContext.getCurrentInstance().execute("fixSearch();");
     }
 
     //Getters & Setters
     public ViewTypeEnum getViewType() {
-	return viewType;
+        return viewType;
     }
 
     public void setViewType(ViewTypeEnum viewType) {
-	this.viewType = viewType;
+        this.viewType = viewType;
     }
 
     public LazyDataModel<Object> getItems() {
-	if (items == null) {
-	    items = new APILazyDataModel(Role.class, String.format("%s/all", BEAN_NAME), params, BEAN_NAME);
-	}
-	return items;
+        if (items == null) {
+            items = new APILazyDataModel(Role.class, String.format("%s/all", BEAN_NAME), BEAN_NAME);
+        }
+        return items;
     }
 
     public void setItems(LazyDataModel<Object> items) {
-	this.items = items;
+        this.items = items;
     }
 
     public Role getCurrentItem() {
-	return currentItem;
+        return currentItem;
     }
 
     public void setCurrentItem(Role rolItem) {
-	currentItem = mapper.convertValue(rolItem, Role.class);
+        currentItem = mapper.convertValue(rolItem, Role.class);
     }
 
     public List<Boolean> getToggleableColumns() {
-	return toggleableColumns;
+        return toggleableColumns;
     }
 
     public void setToggleableColumns(List<Boolean> toggleableColumns) {
-	this.toggleableColumns = toggleableColumns;
+        this.toggleableColumns = toggleableColumns;
     }
 
     public String getExportFormat() {
-	return exportFormat;
+        return exportFormat;
     }
 
     public void setExportFormat(String exportFormat) {
-	this.exportFormat = exportFormat;
+        this.exportFormat = exportFormat;
     }
 
     public boolean isExportPageOnly() {
-	return exportPageOnly;
+        return exportPageOnly;
     }
 
     public void setExportPageOnly(boolean exportPageOnly) {
-	this.exportPageOnly = exportPageOnly;
+        this.exportPageOnly = exportPageOnly;
     }
 
     public Boolean getShowtable() {
-	return showtable;
+        return showtable;
     }
 
     public void setShowtable(Boolean showtable) {
-	this.showtable = showtable;
+        this.showtable = showtable;
     }
 
     public TreeNode getPermissionsTree() {
-	return permissionsTree;
+        return permissionsTree;
     }
 
     public void setPermissionsTree(TreeNode permissionsTree) {
-	this.permissionsTree = permissionsTree;
+        this.permissionsTree = permissionsTree;
     }
 
     public boolean isTreeNodeExpandCollapse() {
-	return treeNodeExpandCollapse;
+        return treeNodeExpandCollapse;
     }
 
     public void setTreeNodeExpandCollapse(boolean treeNodeExpandCollapse) {
-	this.treeNodeExpandCollapse = treeNodeExpandCollapse;
+        this.treeNodeExpandCollapse = treeNodeExpandCollapse;
     }
 
     public void collapseAll() {
-	setExpandedRecursively(permissionsTree, false);
+        setExpandedRecursively(permissionsTree, false);
     }
 
     public void expandAll() {
-	setExpandedRecursively(permissionsTree, true);
+        setExpandedRecursively(permissionsTree, true);
     }
 
     private void setExpandedRecursively(final TreeNode node, final boolean expanded) {
-	node.getChildren().forEach((child) -> {
-	    setExpandedRecursively(child, expanded);
-	});
-	node.setExpanded(expanded);
+        node.getChildren().forEach((child) -> {
+            setExpandedRecursively(child, expanded);
+        });
+        node.setExpanded(expanded);
     }
 
     public void doCheckboxClick(Long idRole, Access ac) {
-	System.out.println(String.format("%s %s %s %s", idRole, ac.getParent(), ac.getId(), ac.getActive()));
-	currentAccess = new Access();
-	currentAccess.setIdRole(idRole);
-	if (ac.getParent() == null) { //Permisos al Padre y todos sus hijos
-	    currentAccess.setParent(ac.getId());
-	    currentAccess.setId(0l);
-	} else {//Permisos al padre y solo al hijo
-	    currentAccess.setParent(0l);
-	    currentAccess.setId(ac.getId());
-	}
+        System.out.println(String.format("%s %s %s %s", idRole, ac.getParent(), ac.getId(), ac.getActive()));
+        currentAccess = new Access();
+        currentAccess.setIdRole(idRole);
+        if (ac.getParent() == null) { //Permisos al Padre y todos sus hijos
+            currentAccess.setParent(ac.getId());
+            currentAccess.setId(0l);
+        } else {//Permisos al padre y solo al hijo
+            currentAccess.setParent(0l);
+            currentAccess.setId(ac.getId());
+        }
 
-	apiRest.postRestAPI(String.format("%s/accessRol", BEAN_NAME, 1), params, currentAccess);
-	permissionsTree = null;
-	getAccessTree(idRole);
+        FactoryRest.getInstance().postRestAPI(String.format("%s/accessRol", BEAN_NAME), currentAccess);
+        permissionsTree = null;
+        getAccessTree(idRole);
     }
 
     private void getAccessTree(Long id) {
-	if (id != null) {
-	    TreeNode root = new DefaultTreeNode("Permissions", null);
-	    List<Access> parents = GetClassUtils.castToList(Access.class, apiRest.getListRestAPI(String.format("%s/%s/parent", BEAN_NAME, id), params));
-	    if (!parents.isEmpty()) {
-		parents.forEach((parent) -> {
-		    List<Access> childs = GetClassUtils.castToList(Access.class, apiRest.getListRestAPI(String.format("%s/%s/parent/%s", BEAN_NAME, id, parent.getId()), params));
-		    if (!childs.isEmpty()) {
-			TreeNode parentNode = new DefaultTreeNode(parent, root);
-			childs.forEach((child) -> {
-			    parentNode.getChildren().add(new DefaultTreeNode(child));
-			});
-			parentNode.setExpanded(true);
-		    } else {
-			root.getChildren().add(new DefaultTreeNode(parent));
-		    }
-		});
-	    }
-	    permissionsTree = root;
-	}
+        if (id != null) {
+            TreeNode root = new DefaultTreeNode("Permissions", null);
+            List<Access> parents = (List<Access>) (Object) GetClassUtils.castToList(Access.class, FactoryRest.getInstance().getListRestAPI(String.format("%s/%s/parent", BEAN_NAME, id)));
+            if (!parents.isEmpty()) {
+                parents.forEach((parent) -> {
+                    List<Access> childs = (List<Access>) (Object) GetClassUtils.castToList(Access.class, FactoryRest.getInstance().getListRestAPI(String.format("%s/%s/parent/%s", BEAN_NAME, id, parent.getId())));
+                    if (!childs.isEmpty()) {
+                        TreeNode parentNode = new DefaultTreeNode(parent, root);
+                        childs.forEach((child) -> {
+                            parentNode.getChildren().add(new DefaultTreeNode(child));
+                        });
+                        parentNode.setExpanded(true);
+                    } else {
+                        root.getChildren().add(new DefaultTreeNode(parent));
+                    }
+                });
+            }
+            permissionsTree = root;
+        }
     }
 }

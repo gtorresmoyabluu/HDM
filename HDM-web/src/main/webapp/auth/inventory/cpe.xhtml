@@ -1,0 +1,200 @@
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml" 
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui" 
+    xmlns:f="http://java.sun.com/jsf/core" 
+    xmlns:h="http://java.sun.com/jsf/html"
+    template="/WEB-INF/layout/template.xhtml">
+    <ui:define name="topbuttonbar">
+        <h:form id="form_tbb">
+            <p:remoteCommand name="doRefresh" action="#{cpe.doRefresh}" update=":card" />
+        </h:form>
+        <li>
+            <a href="#" onclick="doRefresh();">
+                <i title="#{sessionScope.button_refresh}" class="topbar-icon material-icons" onfocus="blur();">autorenew</i> 
+                <span class="topbar-item-name">#{sessionScope.button.refresh}</span>
+            </a>
+        </li>
+    </ui:define>
+    <ui:define name="content">
+        <script>
+            function copyToClipboard(text) {
+              // Create an auxiliary hidden input
+              var aux = document.createElement("input");
+              // Get the text from the element passed into the input
+              aux.setAttribute("value", text);
+              // Append the aux input to the body
+              document.body.appendChild(aux);
+              // Highlight the content
+              aux.select();
+              // Execute the copy command
+              document.execCommand("copy");
+              // Remove the input from the body
+              document.body.removeChild(aux);
+            }
+        </script>
+        <div class="ui-g">
+            <div class="ui-g-12">
+                <h:panelGroup id="card" layout="block" styleClass="card">
+                    <p:outputPanel id="buttonPanel">
+                        <h:form id="form_bt">
+                            <div style="float: left" class="webTitles">
+                                <h1>
+                                    <h:outputText value="#{sessionScope.cpe_title}" rendered="#{cpe.viewType.name =='list'}" />
+                                    <h:outputText value="#{sessionScope.cpe_title_search}" rendered="#{cpe.viewType.name=='search'}" />
+                                    <h:outputText value="#{sessionScope.cpe_title_detail}" rendered="#{cpe.viewType.name=='detail'}" />
+                                    <h:outputText value="#{sessionScope.cpe_title_edit}" rendered="#{cpe.viewType.name=='edit'}" />
+                                </h1>
+                            </div>
+                            <div align="right">
+                                <p:outputPanel rendered="#{cpe.viewType.name=='edit'}">
+                                    <p:commandButton icon="ui-icon ui-icon-keyboard-return" title="#{sessionScope.button_return}"
+                                        action="#{cpe.doSetViewTypeList}" immediate="true" update=":card" process="@this"
+                                        styleClass="ui-priority-primary" style="margin-bottom:10px">
+                                        <p:resetInput target="@form" />
+                                    </p:commandButton>
+                                </p:outputPanel>
+                                <p:outputPanel rendered="#{cpe.viewType.name!='edit'}">
+                                    <p:commandButton icon="ui-icon ui-icon-search"
+                                        styleClass="#{cpe.viewType.name == 'search' ? 'active' : ''}"
+                                        title="#{sessionScope.button_search}" update=":card" action="#{cpe.doChangeSearch}"
+                                        immediate="true" />
+                                    <p:spacer width="10" />
+                                    <p:commandButton id="dynaButton" icon="ui-icon-file-download"
+                                        title="#{sessionScope.button_export}" />
+                                    <p:menu overlay="true" trigger="dynaButton" my="left top" at="left bottom">
+                                        <p:menuitem value="#{sessionScope.table_export_all}" action="#{cpe.doExport}" ajax="false">
+                                            <f:setPropertyActionListener value="false" target="#{cpe.exportPageOnly}" />
+                                            <f:setPropertyActionListener value="csv" target="#{cpe.exportFormat}" />
+                                        </p:menuitem>
+                                        <p:menuitem value="#{sessionScope.table_export_current}" action="#{cpe.doExport}"
+                                            ajax="false">
+                                            <f:setPropertyActionListener value="true" target="#{cpe.exportPageOnly}" />
+                                            <f:setPropertyActionListener value="csv" target="#{cpe.exportFormat}" />
+
+                                        </p:menuitem>
+                                    </p:menu>
+                                    <p:spacer width="10" />
+                                    <p:commandButton id="toggler" type="button" style="float:right" icon="ui-icon-grid-on"
+                                        title="#{sessionScope.button_togglercolumns}" styleClass="showOnDesktop" />
+                                    <p:columnToggler datasource=":form_dt:dataTable" trigger="toggler">
+                                        <p:ajax event="toggle" listener="#{cpe.onColumnToggle}" update=":form_dt:dataTable" />
+                                    </p:columnToggler>
+                                </p:outputPanel>
+                            </div>
+                        </h:form>
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{cpe.viewType.name == 'detail'}">
+                        <p:focus />
+                        <p:spacer height="10" />
+                        <p:spacer height="10" />
+                        <p:spacer height="10" />
+                        <div align="right">
+                            <p:blockUI block="processCancelDetail" trigger="processCancelDetail" />
+                            <p:commandButton id="processCancelDetail" value="#{sessionScope.button_cancel}" update=":card"
+                                action="#{cpe.doSetViewTypeList}" styleClass="ui-priority-primary" style="margin-bottom:10px"
+                                oncomplete="PF('table').unselectAllRows()" />
+                        </div>
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{cpe.viewType.name == 'edit'}">
+                        <ui:include src="include/cwmp.xhtml" />
+                    </p:outputPanel>
+                    <p:spacer height="10" />
+                    <p:outputPanel rendered="#{cpe.viewType.name != 'edit'}">
+                        <h:form id="form_dt">
+                            <p:dataTable id="dataTable" var="item" editable="false" lazy="true" widgetVar="table" reflow="true"
+                                emptyMessage="#{sessionScope.table_empty}" value="#{cpe.items}" selectionMode="single"
+                                rowHover="true" paginator="true" rows="10" paginatorPosition="bottom"
+                                currentPageReportTemplate="(#{sessionScope.table_records}: {startRecord} - {endRecord} #{sessionScope.table_of} {totalRecords}, #{sessionScope.table_page} {currentPage} #{sessionScope.table_of} {totalPages})"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,20,50">
+
+                                <f:facet name="header">
+                                    <h:outputText value="#{sessionScope.cpe_table_title}" />
+                                    <h:panelGroup layout="block" rendered="#{cpe.isItemsFiltered}">
+                                        <i class="material-icons table-filter-icon">search</i>
+                                    </h:panelGroup>
+                                </f:facet>
+                                <p:ajax event="rowSelect" listener="#{cpe.doChangeDetail}" oncomplete="window.scrollTo(0,0);" update=":card" />
+                                <p:ajax event="rowUnselect" listener="#{cpe.doSetViewTypeList}" update=":card" />
+                                <p:column sortBy="#{item.idDevice}" visible="#{cpe.toggleableColumns[0]}"
+                                    exportable="#{cpe.toggleableColumns[0]}">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.cpe_table_cpeid}" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.idDevice}" title="#{item.idDevice}" />
+                                </p:column>
+                                <p:column sortBy="#{item.macDevice}" priority="1" visible="#{cpe.toggleableColumns[1]}"
+                                    exportable="#{cpe.toggleableColumns[1]}">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.cpe_table_mac}" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.macDevice}" title="#{item.macDevice}" />
+                                </p:column>
+                                <p:column sortBy="#{item.ipDevice}" priority="1" visible="#{cpe.toggleableColumns[2]}"
+                                    exportable="#{cpe.toggleableColumns[2]}" styleClass="ipColumn">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.cpe_table_ip}" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.ipDevice}" title="#{item.ipDevice}" />
+                                </p:column>
+                                <p:column sortBy="#{item.statusDevice.name}" priority="2" visible="#{cpe.toggleableColumns[3]}"
+                                    exportable="#{cpe.toggleableColumns[3]}">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.cpe_table_state}" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.statusDevice.name}" title="#{item.statusDevice.name}" />
+                                </p:column>
+                                <p:column sortBy="#{item.error}" priority="2" visible="#{cpe.toggleableColumns[4]}"
+                                    exportable="#{cpe.toggleableColumns[4]}">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.cpe_table_error}" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.error}" title="#{item.error}" />
+                                </p:column>
+                                <p:column sortBy="#{item.manufacturer.name}" priority="4"
+                                    visible="#{cpe.toggleableColumns[5]}" exportable="#{cpe.toggleableColumns[5]}">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.cpe_table_manufacturer}" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.manufacturer.name}"
+                                        title="#{item.manufacturer.name}" />
+                                </p:column>
+                                <p:column sortBy="#{item.idModel.name}" priority="4" visible="#{cpe.toggleableColumns[6]}"
+                                    exportable="#{cpe.toggleableColumns[6]}">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.cpe_table_model}" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.idModel.name}" title="#{item.idModel.name}" />
+                                </p:column>
+                                <p:column sortBy="#{item.firmware.name}" priority="4" visible="#{cpe.toggleableColumns[7]}"
+                                    exportable="#{cpe.toggleableColumns[7]}">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.cpe_table_firmware}" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.firmware.name}" title="#{item.firmware.name}" />
+                                </p:column>
+                                <p:column sortBy="#{item.urlCpe}" priority="2" visible="#{cpe.toggleableColumns[8]}"
+                                    exportable="#{cpe.toggleableColumns[8]}">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{sessionScope.cpe_table_ip}" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.urlCpe}" title="#{item.urlCpe}" />
+                                </p:column>
+                                <p:column exportable="false" toggleable="false" width="34px;"
+                                    rendered="#{sessionFace.hasPermission('cpes_cwmp')}">
+                                    <p:commandButton icon="ui-icon ui-icon-open-in-new"
+                                        styleClass="#{cpe.currentItem.id == item.id and cpe.viewType.name == 'edit' ? 'active' : ''}"
+                                        update=":card" title="CWMP" action="#{cpe.doChangeEdit}" immediate="true"
+                                        oncomplete="PF('table').unselectAllRows(); window.scrollTo(0,0);">
+                                        <f:setPropertyActionListener value="#{item}" target="#{cpe.currentItem}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </p:outputPanel>
+                </h:panelGroup>
+            </div>
+        </div>
+    </ui:define>
+</ui:composition>

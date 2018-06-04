@@ -14,6 +14,10 @@ import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  *
@@ -21,6 +25,7 @@ import org.apache.commons.codec.binary.Base64;
  */
 public abstract class CryptoUtils {
 
+    private static Logger logger = LogManager.getLogger(CryptoUtils.class.getName());
     /**
      * Nombre del conjunto de caracteres para codificar cadenas de texto.
      */
@@ -57,11 +62,11 @@ public abstract class CryptoUtils {
      */
     public static PasswordHash hash(String value) {
 
-	byte[] salt = new byte[HASH_SALT_LENGTH];
-	SecureRandom rnd = new SecureRandom();
-	rnd.nextBytes(salt);
+        byte[] salt = new byte[HASH_SALT_LENGTH];
+        SecureRandom rnd = new SecureRandom();
+        rnd.nextBytes(salt);
 
-	return hash(value, salt);
+        return hash(value, salt);
     }
 
     /**
@@ -75,21 +80,21 @@ public abstract class CryptoUtils {
      */
     private static PasswordHash hash(String value, byte[] salt) {
 
-	try {
-	    byte[] retVal;
-	    byte[] valueBytes = value.getBytes(CHARSET_NAME);
-	    Mac mac = Mac.getInstance(HASH_ALGORITHM);
-	    Key key = new SecretKeySpec(salt, HASH_ALGORITHM);
-	    mac.init(key);
-	    retVal = mac.doFinal(valueBytes);
-	    for (int i = 1; i < HASH_ITERATIONS; i++) {
-		retVal = mac.doFinal(retVal);
-	    }
-	    return new PasswordHash(retVal, salt);
+        try {
+            byte[] retVal;
+            byte[] valueBytes = value.getBytes(CHARSET_NAME);
+            Mac mac = Mac.getInstance(HASH_ALGORITHM);
+            Key key = new SecretKeySpec(salt, HASH_ALGORITHM);
+            mac.init(key);
+            retVal = mac.doFinal(valueBytes);
+            for (int i = 1; i < HASH_ITERATIONS; i++) {
+                retVal = mac.doFinal(retVal);
+            }
+            return new PasswordHash(retVal, salt);
 
-	} catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException cause) {
-	    throw new RuntimeException(cause);
-	}
+        } catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException cause) {
+            throw new RuntimeException(cause);
+        }
 
     }
 
@@ -105,10 +110,10 @@ public abstract class CryptoUtils {
      */
     public static boolean isValid(String value, String correctHash, String salt) {
 
-	byte[] saltBytes = Base64.decodeBase64(salt);
+        byte[] saltBytes = Base64.decodeBase64(salt);
 
-	PasswordHash ph = hash(value, saltBytes);
-	return ph.getHash().equals(correctHash);
+        PasswordHash ph = hash(value, saltBytes);
+        return ph.getHash().equals(correctHash);
     }
 
     /**
@@ -116,44 +121,44 @@ public abstract class CryptoUtils {
      */
     public static class PasswordHash {
 
-	/**
-	 * Contains the value of <code> hash </ code>.
-	 */
-	private byte[] hash;
+        /**
+         * Contains the value of <code> hash </ code>.
+         */
+        private byte[] hash;
 
-	/**
-	 * Contiene el valor de <code>salt</code>.
-	 */
-	private byte[] salt;
+        /**
+         * Contiene el valor de <code>salt</code>.
+         */
+        private byte[] salt;
 
-	/**
-	 * Construct a new instance with the indicated values.
-	 *
-	 * @param hash The value of <code> hash </ code>.
-	 * @param salt The value of <code> salt </ code>.
-	 */
-	public PasswordHash(byte[] hash, byte[] salt) {
-	    this.hash = hash;
-	    this.salt = salt;
-	}
+        /**
+         * Construct a new instance with the indicated values.
+         *
+         * @param hash The value of <code> hash </ code>.
+         * @param salt The value of <code> salt </ code>.
+         */
+        public PasswordHash(byte[] hash, byte[] salt) {
+            this.hash = hash;
+            this.salt = salt;
+        }
 
-	/**
-	 * Returns the value of <code> hash </ code> as a String in base64.
-	 *
-	 * @return the value.
-	 */
-	public String getHash() {
-	    return encodeBase64(hash);
-	}
+        /**
+         * Returns the value of <code> hash </ code> as a String in base64.
+         *
+         * @return the value.
+         */
+        public String getHash() {
+            return encodeBase64(hash);
+        }
 
-	/**
-	 * Returns the value of <code> salt </ code> as a String in base64.
-	 *
-	 * @return the value.
-	 */
-	public String getSalt() {
-	    return encodeBase64(salt);
-	}
+        /**
+         * Returns the value of <code> salt </ code> as a String in base64.
+         *
+         * @return the value.
+         */
+        public String getSalt() {
+            return encodeBase64(salt);
+        }
     }
 
     // </editor-fold>
@@ -170,8 +175,8 @@ public abstract class CryptoUtils {
      * Clave para cifrar/descifrar usado en el algoritmo reversible
      */
     private static final byte[] REVERSE_KEY = {(byte) 0x24, (byte) 0x6f, (byte) 0x4c, (byte) 0x61, (byte) 0x4b, (byte) 0x61,
-	(byte) 0x53, (byte) 0x65, (byte) 0x48, (byte) 0x21, (byte) 0x53, (byte) 0x68, (byte) 0x55, (byte) 0x72, (byte) 0x21,
-	(byte) 0x23};
+        (byte) 0x53, (byte) 0x65, (byte) 0x48, (byte) 0x21, (byte) 0x53, (byte) 0x68, (byte) 0x55, (byte) 0x72, (byte) 0x21,
+        (byte) 0x23};
 
     /**
      * Método para cifrar una cadena de texto que podrá ser posteriormente cifrada
@@ -180,16 +185,16 @@ public abstract class CryptoUtils {
      * @return Cadena de texto cifrada y codificada en Base64
      */
     public static String encrypt(String value) {
-	try {
-	    Key key = new SecretKeySpec(REVERSE_KEY, REVERSE_ALGORITHM);
-	    Cipher cipher = Cipher.getInstance(REVERSE_ALGORITHM);
-	    cipher.init(Cipher.ENCRYPT_MODE, key);
+        try {
+            Key key = new SecretKeySpec(REVERSE_KEY, REVERSE_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(REVERSE_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
 
-	    return encodeBase64(cipher.doFinal(value.getBytes(CHARSET_NAME)));
+            return encodeBase64(cipher.doFinal(value.getBytes(CHARSET_NAME)));
 
-	} catch (Throwable e) {
-	    throw new RuntimeException(e);
-	}
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -199,15 +204,15 @@ public abstract class CryptoUtils {
      * @return Cadena de texto decodificada y descifrada
      */
     public static String decrypt(String value) {
-	try {
-	    Key key = new SecretKeySpec(REVERSE_KEY, REVERSE_ALGORITHM);
-	    Cipher cipher = Cipher.getInstance(REVERSE_ALGORITHM);
-	    cipher.init(Cipher.DECRYPT_MODE, key);
-	    return new String(cipher.doFinal(Base64.decodeBase64(value)), CHARSET_NAME);
+        try {
+            Key key = new SecretKeySpec(REVERSE_KEY, REVERSE_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(REVERSE_ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            return new String(cipher.doFinal(Base64.decodeBase64(value)), CHARSET_NAME);
 
-	} catch (Throwable e) {
-	    throw new RuntimeException(e);
-	}
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // </editor-fold>
@@ -216,36 +221,47 @@ public abstract class CryptoUtils {
     ////////////////////////////////////////////////////////////////////////////////
     // <editor-fold defaultstate="collapsed" desc="Click on the + sign on the left to edit the code.">
     public static String encodeBase64(byte[] value) {
-	try {
-	    return new String(Base64.encodeBase64(value), CHARSET_NAME);
-	} catch (UnsupportedEncodingException ex) {
-	    throw new RuntimeException(ex);
-	}
+        try {
+            return new String(Base64.encodeBase64(value), CHARSET_NAME);
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public static String encodeBase64(String value) {
-	try {
-	    return encodeBase64(value.getBytes(CHARSET_NAME));
-	} catch (UnsupportedEncodingException ex) {
-	    throw new RuntimeException(ex);
-	}
+        try {
+            return encodeBase64(value.getBytes(CHARSET_NAME));
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public static String decodeBase64(byte[] value) {
-	try {
-	    return new String(Base64.decodeBase64(value), CHARSET_NAME);
-	} catch (UnsupportedEncodingException ex) {
-	    throw new RuntimeException(ex);
-	}
+        try {
+            return new String(Base64.decodeBase64(value), CHARSET_NAME);
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public static String decodeBase64(String value) {
-	try {
-	    return new String(Base64.decodeBase64(value), CHARSET_NAME);
-	} catch (UnsupportedEncodingException ex) {
-	    throw new RuntimeException(ex);
-	}
+        try {
+            return new String(Base64.decodeBase64(value), CHARSET_NAME);
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     // </editor-fold>
+    public static String encodePassword(String password) {
+        SecureRandom random = null;
+        try {
+            random = SecureRandom.getInstance("SHA1PRNG");
+
+        } catch (NoSuchAlgorithmException ex) {
+            logger.error("Error: " + ex.getMessage());
+        }
+        PasswordEncoder encoder = new BCryptPasswordEncoder(16, random);
+        return encoder.encode(password);
+    }
 }

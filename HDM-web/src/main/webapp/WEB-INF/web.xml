@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    <!-- Parámetros de log4j -->
+    <context-param>
+        <param-name>log4j-config-location</param-name>
+        <param-value>WEB-INF/log4j.properties</param-value>
+    </context-param>
     <!-- Parámetros de primefaces -->
     <context-param>
 	<param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
@@ -115,6 +120,17 @@
 	<servlet-name>Faces Servlet</servlet-name>
 	<url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
+    
+    <!-- Servicio Device--> 
+     <servlet>
+        <servlet-name>CwmpEndpoint</servlet-name>
+        <servlet-class>com.bluu.hdm.web.servlet.CwmpEndpoint</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CwmpEndpoint</servlet-name>
+        <url-pattern>/acs</url-pattern>
+    </servlet-mapping>
+    
     <session-config>
 	<session-timeout>
 	    30

@@ -5,6 +5,7 @@
  */
 package com.bluu.hdm.rest.service;
 
+import com.bluu.hdm.rest.service.administration.RoleService;
 import com.bluu.hdm.rest.dao.interfaces.IMessageDAO;
 import com.bluu.hdm.rest.entity.MessageEntity;
 import com.bluu.hdm.rest.vo.MessageVO;

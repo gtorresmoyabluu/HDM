@@ -1,7 +1,7 @@
 package com.bluu.hdm.web.face;
 
-import com.bluu.hdm.web.pojo.License;
-import com.bluu.hdm.web.pojo.User;
+import com.bluu.hdm.web.pojo.administracion.License;
+import com.bluu.hdm.web.pojo.administracion.User;
 import com.bluu.hdm.web.pojo.UserSession;
 import com.bluu.hdm.web.util.AuthorizationUtil;
 import java.io.Serializable;

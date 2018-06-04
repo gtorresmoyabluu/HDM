@@ -5,6 +5,8 @@
  */
 package com.bluu.hdm.rest.util;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,12 +27,13 @@ public class Mapper {
 
     @Bean
     ObjectMapper objectMapper() {
-	ObjectMapper om = new ObjectMapper();
-	om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-	om.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true);
-	om.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-	om.setDateFormat(df);
-	om.getDeserializationConfig().with(df);
-	return om;
+        ObjectMapper om = new ObjectMapper();
+        om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        om.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true);
+        om.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        om.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
+        om.setDateFormat(df);
+        om.getDeserializationConfig().with(df);
+        return om;
     }
 }

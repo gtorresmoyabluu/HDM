@@ -1,6 +1,11 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `setAccessToRol`(IN pIdRol bigint(20), 
-                                                             IN pIdAccess bigint(20), 
-                                                             IN pIdParent bigint(20))
+USE `hdm`;
+DROP procedure IF EXISTS `getAccessParent`;
+
+DELIMITER $$
+USE `hdm`$$
+CREATE PROCEDURE `setAccessToRol`(IN pIdRol bigint(20), 
+								  IN pIdAccess bigint(20), 
+								  IN pIdParent bigint(20))
 BEGIN
 	DECLARE pExist INT DEFAULT 0;
     DECLARE pAux bigint(20);
@@ -74,4 +79,6 @@ BEGIN
 				WHERE parent = pIdParent;
             END IF;
 	END CASE;
-END
+END$$
+
+DELIMITER ;

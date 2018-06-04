@@ -33,7 +33,7 @@ public class ManufacturerEntity implements Serializable {
     @Size(max = 255)
     @Column(name = "name")
     private String name;
-    @OneToMany(mappedBy = "idManufacturer")
+    @OneToMany(mappedBy = "manufacturer")
     @JsonIgnore
     private Set<ModelEntity> modelEntitySet;
 

@@ -5,6 +5,11 @@
  */
 package com.bluu.hdm.rest.entity;
 
+import com.bluu.hdm.rest.util.CustomDateDeserializer;
+import com.bluu.hdm.rest.util.CustomDateSerializer;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
@@ -35,8 +40,17 @@ public class FirmwareEntity implements Serializable {
     @Size(max = 255)
     @Column(name = "name")
     private String name;
+    
+    @Column(name = "creation_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonSerialize(using = CustomDateSerializer.class)
+    @JsonDeserialize(using = CustomDateDeserializer.class)
+    private Date creationDate;
+    
     @Column(name = "update_date")
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonSerialize(using = CustomDateSerializer.class)
+    @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date updateDate;
 
     @Size(max = 500)
@@ -68,6 +82,14 @@ public class FirmwareEntity implements Serializable {
 
     public void setName(String name) {
 	this.name = name;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 
     public Date getUpdateDate() {

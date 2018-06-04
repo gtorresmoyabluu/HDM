@@ -6,7 +6,7 @@
 package com.bluu.hdm.web.rest;
 
 import java.util.List;
-import javax.ws.rs.core.MultivaluedMap;
+import org.primefaces.model.UploadedFile;
 
 /**
  *
@@ -15,15 +15,17 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 public interface IConsumeREST<T> {
 
-    T postRestAPI(String operation, MultivaluedMap params, Object postBody);
+    T postRestAPI(String operation, Object postBody);
 
-    T getRestAPI(String operation, MultivaluedMap params);
+    T getRestAPI(String operation);
 
-    List<T> getListRestAPI(String operation, MultivaluedMap params);
+    List<T> getListRestAPI(String operation);
 
-    T putRestAPI(String operation, MultivaluedMap params, Class<?> clazz, Object postBody);
+    T putRestAPI(String operation, Class<?> clazz, Object postBody);
 
-    T delRestAPI(String operation, MultivaluedMap params);
+    boolean delRestAPI(String operation);
 
     T getToken(String username, String password);
+
+    T uploadFile(String operation, UploadedFile fileToUpload, Object postBody);
 }

@@ -31,82 +31,72 @@ public class ModelEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private long id;
+    private Long id;
     @Size(max = 255)
     @Column(name = "name")
     private String name;
 
-    @Column(name = "if_firmware")
-    private long idFirmware;
-
     @JoinColumn(name = "id_manufacturer", referencedColumnName = "id")
     @ManyToOne
-    private ManufacturerEntity idManufacturer;
-    @OneToMany(mappedBy = "idModel")
+    private ManufacturerEntity manufacturer;
+
     @JsonIgnore
-    private Set<DeviceEntity> deviceEntitySet;
     @OneToMany(mappedBy = "idModel")
+    private Set<CpeEntity> devices;
+    
     @JsonIgnore
-    private Set<FirmwareEntity> firmwareEntitySet;
+    @OneToMany(mappedBy = "idModel")    
+    private Set<FirmwareEntity> firmwares;
 
     public ModelEntity() {
     }
 
-    public ModelEntity(long id) {
-	this.id = id;
+    public ModelEntity(Long id) {
+        this.id = id;
     }
 
-    public long getId() {
-	return id;
+    public Long getId() {
+        return id;
     }
 
-    public void setId(long id) {
-	this.id = id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
-	return name;
+        return name;
     }
 
     public void setName(String name) {
-	this.name = name;
+        this.name = name;
     }
 
-    public ManufacturerEntity getIdManufacturer() {
-	return idManufacturer;
+    public ManufacturerEntity getManufacturer() {
+        return manufacturer;
     }
 
-    public void setIdManufacturer(ManufacturerEntity idManufacturer) {
-	this.idManufacturer = idManufacturer;
+    public void setManufacturer(ManufacturerEntity manufacturer) {
+        this.manufacturer = manufacturer;
     }
 
-    public Set<DeviceEntity> getDeviceEntitySet() {
-	return deviceEntitySet;
+    public Set<CpeEntity> getDevices() {
+        return devices;
     }
 
-    public void setDeviceEntitySet(Set<DeviceEntity> deviceEntitySet) {
-	this.deviceEntitySet = deviceEntitySet;
+    public void setDevices(Set<CpeEntity> devices) {
+        this.devices = devices;
     }
 
-    public Set<FirmwareEntity> getFirmwareEntitySet() {
-	return firmwareEntitySet;
+    public Set<FirmwareEntity> getFirmwares() {
+        return firmwares;
     }
 
-    public void setFirmwareEntitySet(Set<FirmwareEntity> firmwareEntitySet) {
-	this.firmwareEntitySet = firmwareEntitySet;
+    public void setFirmwares(Set<FirmwareEntity> firmwares) {
+        this.firmwares = firmwares;
     }
 
     @Override
     public String toString() {
-	return "com.bluu.hdm.rest.entity.ModelEntity[ id=" + id + " ]";
+        return "com.bluu.hdm.rest.entity.ModelEntity[ id=" + id + " ]";
     }
-
-    public long getIdFirmware() {
-	return idFirmware;
-    }
-
-    public void setIdFirmware(long idFirmware) {
-	this.idFirmware = idFirmware;
-    }
-
 }

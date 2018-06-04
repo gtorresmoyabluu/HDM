@@ -33,9 +33,10 @@ public class StatusDevicesEntity implements Serializable {
     @Size(max = 255)
     @Column(name = "name")
     private String name;
+    
     @OneToMany(mappedBy = "statusDevice")
     @JsonIgnore
-    private Set<DeviceEntity> deviceEntitySet;
+    private Set<CpeEntity> devices;
 
     public StatusDevicesEntity() {
     }
@@ -60,13 +61,13 @@ public class StatusDevicesEntity implements Serializable {
 	this.name = name;
     }
 
-    public Set<DeviceEntity> getDeviceEntitySet() {
-	return deviceEntitySet;
+    public Set<CpeEntity> getDevices() {
+        return devices;
     }
 
-    public void setDeviceEntitySet(Set<DeviceEntity> deviceEntitySet) {
-	this.deviceEntitySet = deviceEntitySet;
-    }
+    public void setDevices(Set<CpeEntity> devices) {
+        this.devices = devices;
+    }    
 
     @Override
     public String toString() {

@@ -22,7 +22,7 @@ public interface IService<T, ID extends Serializable> {
 
     ResponseEntity<Void> save(@RequestBody T oRequest, UriComponentsBuilder ucBuilder);
 
-    ResponseEntity<T> update(@PathVariable("id") ID id, @RequestBody T oRequest);
+    ResponseEntity<T> update(@RequestBody T oRequest);
 
     ResponseEntity<T> delete(@PathVariable(value = "id") ID id);
 
